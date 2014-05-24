@@ -56,7 +56,7 @@ $nationRequest = new StorageRequest('LookupNations', $metadataManager->metadataF
 $extraRequest = new StorageRequest('Extras', $metadataManager->metadataForEntity('Extra'));
 
 // Limit nation search to 5 of each nation
-$fewNations = array(1, 2, 3, 4, 5, 12466, 12531, 13083, 13099, 13141, 11938, 12439, 12447, 12448, 12449, 12436, 12437, 12441, 13216, 13345);
+$fewNations = array(1, 2, 3, 4, 5, 11938, 12436, 12437, 12439, 12441, 12447, 12448, 12449, 12466, 12531, 13083, 13099, 13141, 13216, 13345);
 $rootRequest->addFilter(array('LocationID' => array('$in' => $fewNations)));
 
 // Add what we are looking for

@@ -270,6 +270,7 @@ class FetchNode
 
     /**
      * Clears any current cursor. This resets the state of this node to UNREADY
+     * Also purges any child nodes belonging to this node.
      */
     public function purge()
     {
@@ -279,6 +280,15 @@ class FetchNode
         $this->batchFetchCursor = null;
 
         // Purge my children
+        $this->purgeChildNodes();
+    }
+
+
+    /**
+     * Purges just the child nodes
+     */
+    public function purgeChildNodes()
+    {
         $this->childNodeResults = array();
         foreach($this->children as $childNode) {
             $childNode->purge();
@@ -376,7 +386,7 @@ class FetchNode
             $this->log('Fetch parent - fetched data rows: ' . count($this->nodeData));
 
             // Reset child results.
-            $this->childNodeResults = array();
+            $this->purgeChildNodes();
 
             // Call ourselves to start over
             return $this->fetch();

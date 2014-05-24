@@ -3,8 +3,8 @@
  */
 
 // Create some extras data. ~50 values per location id, ranging from 1-50
-var extraCountMin = 2,
-    extraCountRange = 2,
+var extraCountMin = 20,
+    extraCountRange = 30,
     extraValMin = 1,
     extraValRange = 49;
 
