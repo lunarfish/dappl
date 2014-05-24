@@ -368,10 +368,7 @@ class FetchNode
             $result = $this->fetchFromChildNode(0);
             if ($result) {
                 // Child nodes returned a result, return it.
-
-                // @todo: combine with node results
-
-                return $result;
+                return $this->combineCompletedChildNodeResults($result, $this->nodeData);
             }
 
             // Child nodes returned nothing. Maybe this node has more results to fetch from it's cursor?
@@ -413,9 +410,6 @@ class FetchNode
     {
         // We have completed all child nodes if child index is beyond bounds - we have a full stack of results
         if ($childIndex >= count($this->children)) {
-
-            // @todo: collate results
-
             return $this->childNodeResults;
         }
 
@@ -448,6 +442,7 @@ class FetchNode
         if (self::UNREADY === $state) {
 
             // @todo: prepare child node with combination of this nodes results and other child node results stored in $this->childNodeResults
+            // only need to do this if there is more than one child node
 
             $childNode->prepare($this->nodeData);
         }
@@ -486,6 +481,12 @@ class FetchNode
             // If we have more results to fetch from this cursor return false. Otherwise return true to show we are done now.
             return false;
         }
+    }
+
+
+    private function combineCompletedChildNodeResults(array $result, array $nodeData)
+    {
+        
     }
 
 

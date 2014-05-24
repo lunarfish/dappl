@@ -66,14 +66,14 @@ $extraRequest->addFilter(array('ExtraValue' => array('$gt' => 25)));
 
 // Configure nodes
 $rootNode = new FetchNode($metadataManager, $rootRequest, $storageManager, $batchSize, false);
-//$countyNode = new FetchNode($metadataManager, $countyRequest, $storageManager, $batchSize, false);
-//$rootNode->addChild($countyNode, 'LookupCountys');
+$countyNode = new FetchNode($metadataManager, $countyRequest, $storageManager, $batchSize, false);
+$rootNode->addChild($countyNode, 'LookupCountys');
 
-//$nationNode = new FetchNode($metadataManager, $nationRequest, $storageManager, $batchSize, false);
-//$countyNode->addChild($nationNode, 'LookupNations');
+$nationNode = new FetchNode($metadataManager, $nationRequest, $storageManager, $batchSize, false);
+$countyNode->addChild($nationNode, 'LookupNations');
 
 $extraNode = new FetchNode($metadataManager, $extraRequest, $storageManager, $batchSize, false);
-$rootNode->addChild($extraNode, 'Extras');
+//$rootNode->addChild($extraNode, 'Extras');
 
 
 // Run the graph - original version with batch fetching (sub nodes could generate large arrays despite batching though)
