@@ -95,7 +95,7 @@ do {
 // Second version - results are output within child node batch cycles to ensure we never consume too much memory
 $total = 0;
 $result = null;
-$input = array();
+$input = new FetchResultCollection();
 $rootNode->prepare($input);
 do {
     $result = $rootNode->fetch();

@@ -25,6 +25,7 @@ class FetchNode
     private $inputData;
     private $nodeData;
     private $childNodeResults;
+    private $fetchResultCollection;
 
     // State enum
     const UNREADY = 0;
@@ -76,6 +77,7 @@ class FetchNode
     }
 
 
+    /*
     public function execute(array &$sourceBatchResult)
     {
         // Do we have a cursor to work with?
@@ -115,10 +117,10 @@ class FetchNode
 
         // Return true to indicate we are done but there maybe further batches for this node
         return true;
-    }
+    }*/
 
 
-    private function addFilterFromSourceData(StorageRequest $request, array &$sourceBatchResult)
+    private function addFilterFromSourceData(StorageRequest $request, FetchResultCollection $inputResultCollection)
     {
         if ($this->navigationProperty) {
             $nodeKey = $this->navigationProperty->getRelatedEntityKey();
@@ -148,13 +150,15 @@ class FetchNode
                     break;
             }
 */
-            $pkList = array();
+           /* $pkList = array();
             foreach($sourceBatchResult as $row) {
                 // Store keys in array index to prevent dupes
                 $pkList[$row[$sourceKey]] = true;
             }
 
-            $request->addFilter(array($nodeKey => array('$in' => array_keys($pkList))));
+            $request->addFilter(array($nodeKey => array('$in' => array_keys($pkList)))); */
+
+            $request->addFilter(array($nodeKey => array('$in' => $inputResultCollection->getUniqueValues($sourceKey))));
         }
     }
 
@@ -311,7 +315,26 @@ class FetchNode
     }
 
 
-    public function prepare(array $inputData)
+    public function getFetchResultCollection($purge = false)
+    {
+        if (!$this->fetchResultCollection) {
+            // Create a new fetch result collection
+            $this->fetchResultCollection = new FetchResultCollection();
+
+            // Set primary key from our base request metadata
+            $pk = $this->baseRequest->getMetadata()->getKey();
+            if ($pk) {
+                $this->fetchResultCollection->setPrimaryKeyName($pk);
+            }
+        }
+        if ($purge) {
+            $this->fetchResultCollection->purge();
+        }
+        return $this->fetchResultCollection;
+    }
+
+
+    public function prepare(FetchResultCollection $inputResultCollection)
     {
         // We should not be called if we already have a cursor that is in flight
         if (self::UNREADY !== $this->getState()) {
@@ -323,19 +346,22 @@ class FetchNode
         $request->setFilter($this->baseRequest->getFilter());
 
         // Add any extra filter from the source data - eg extract any relationship keys to filter by
-        $this->addFilterFromSourceData($request, $inputData);
+        $this->addFilterFromSourceData($request, $inputResultCollection);
 
         // Create the cursor
         $this->batchFetchCursor = $this->storageManager->prepareBatchFetch($request, $this->batchSize);
-        $this->log('Created batch fetch cursor from input data rows: ' . count($inputData));
+        $this->log('Created batch fetch cursor from input data rows: ' . count($inputResultCollection));
 
-        // Store the input data for argregating results
-        $this->inputData = $inputData;
+        // Clear our result collection
+        $fetchResultCollection = $this->getFetchResultCollection(true);
+
+        // Store the input data for aggregating results
+        $this->inputData = $inputResultCollection;
 
         if (count($this->children)) {
             // This is not a leaf node, so we must fetch our results now so it's ready when child node results come in and we need to compile
-            $this->nodeData = $this->batchFetchCursor->getNextBatch();
-            $this->log('Prepare parent - fetched data rows: ' . count($this->nodeData));
+            $this->batchFetchCursor->getNextBatch($fetchResultCollection);
+            $this->log('Prepare parent - fetched data rows: ' . count($fetchResultCollection));
 
             $this->childNodeResults = array();
         } else {
@@ -368,7 +394,7 @@ class FetchNode
             $result = $this->fetchFromChildNode(0);
             if ($result) {
                 // Child nodes returned a result, return it.
-                return $this->combineCompletedChildNodeResults($result, $this->nodeData);
+                return $this->combineCompletedChildNodeResults($result, $this->getFetchResultCollection());
             }
 
             // Child nodes returned nothing. Maybe this node has more results to fetch from it's cursor?
@@ -379,8 +405,9 @@ class FetchNode
             }
 
             // We have more, go get it.
-            $this->nodeData = $this->batchFetchCursor->getNextBatch();
-            $this->log('Fetch parent - fetched data rows: ' . count($this->nodeData));
+            $fetchResultCollection = $this->getFetchResultCollection(true);
+            $this->batchFetchCursor->getNextBatch($fetchResultCollection);
+            $this->log('Fetch parent - fetched data rows: ' . count($fetchResultCollection));
 
             // Reset child results.
             $this->purgeChildNodes();
@@ -444,12 +471,12 @@ class FetchNode
             // @todo: prepare child node with combination of this nodes results and other child node results stored in $this->childNodeResults
             // only need to do this if there is more than one child node
 
-            $childNode->prepare($this->nodeData);
+            $childNode->prepare($this->getFetchResultCollection());
         }
 
         // Child node is ready, fetch some data
         $childResult = $childNode->fetch();
-        if (is_array($childResult)) {
+        if ($childResult) {
             // We have data - store it in the results array provided and call ourself to dive into the next level
             $this->childNodeResults[$childIndex] = $childResult;
             return $this->fetchFromChildNode($childIndex + 1);
@@ -470,12 +497,13 @@ class FetchNode
         }
 
         // We are not complete, so we still have work to do with this batch cursor - go get some data.
-        $this->nodeData = $this->batchFetchCursor->getNextBatch();
-        $this->log('Leaf fetch - fetched data rows: ' . count($this->nodeData));
+        $fetchResultCollection = $this->getFetchResultCollection(true);
+        $this->batchFetchCursor->getNextBatch($fetchResultCollection);
+        $this->log('Leaf fetch - fetched data rows: ' . count($fetchResultCollection));
 
         // This node is a leaf node (no kids) so it can return results. Do we have any?
-        if (count($this->nodeData)) {
-            return $this->nodeData;
+        if (count($fetchResultCollection)) {
+            return $fetchResultCollection;
         } else {
             // Nothing this time.
             // If we have more results to fetch from this cursor return false. Otherwise return true to show we are done now.
@@ -484,9 +512,9 @@ class FetchNode
     }
 
 
-    private function combineCompletedChildNodeResults(array $result, array $nodeData)
+    private function combineCompletedChildNodeResults(array $childResults, FetchResultCollection $nodeData)
     {
-        
+
     }
 
 
