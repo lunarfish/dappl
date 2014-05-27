@@ -566,33 +566,35 @@ class FetchNode
         // Iterate by the entity key
         //$childResultCollection->iterateByIndexName($childNavigationProperty->getEntityKey());
         foreach($childResultCollection as $childResultEntity) {
-            // Get the corresponding node entity
-            // (Assume for now there will only be one parent entity for one or many child entities)
-            // @todo: handle inverse relationships: many:1
-
-            // First see if it already exists in the new return results (eg we have a 1:many relationship and a
-            // previous child result has matched)
-            $nodeEntity = $returnResultCollection->getItemByIndex($nodeKey, $childResultEntity->$childKey);
-            if (!$nodeEntity) {
-                // Nope, fetch instead from the original node results and add it to the return result set
-                $nodeEntity = $nodeResultCollection->getItemByIndex($nodeKey, $childResultEntity->$childKey);
+            // Get the corresponding node entity. First move any matches from node collection to return collection
+            // There maybe more than one, for many:1 relationships (eg LookupCounty -> LookupNation)
+            // (Moving records incase some of the matched entities are already in results, and some are in node collection
+            // -  this way we get them all)
+            $nodeEntities = $nodeResultCollection->getEntitiesByIndex($nodeKey, $childResultEntity->$childKey);
+            foreach($nodeEntities as $nodeEntity) {
                 $returnResultCollection->addEntity($nodeEntity);
+                $nodeResultCollection->removeEntity($nodeEntity);
             }
 
-            if (!$nodeEntity) {
-                throw new Exception(sprintf('Unable to match child node result: [%s] to this nodes core results: [%s]', serialize($childResultEntity), serialize($nodeResultCollection)));
-            }
+            // Now get all the result collection matches and embed the child entity
+            $nodeEntities = $returnResultCollection->getEntitiesByIndex($nodeKey, $childResultEntity->$childKey);
+            foreach($nodeEntities as $nodeEntity) {
 
-            // Create node entity navigation property, if required
-            if (!property_exists($nodeEntity, $childNavigationPropertyName)) {
-                $nodeEntity->$childNavigationPropertyName = array();
-            }
 
-            // Add child entity to the node entity
-            array_push($nodeEntity->$childNavigationPropertyName, $childResultEntity);
+                // @todo: for scalar nav property, do not embed in an array.
+
+
+                // Create node entity navigation property, if required
+                if (!property_exists($nodeEntity, $childNavigationPropertyName)) {
+                    $nodeEntity->$childNavigationPropertyName = array();
+                }
+
+                // Add child entity to the node entity
+                array_push($nodeEntity->$childNavigationPropertyName, $childResultEntity);
+            }
         }
 
-        $z = 1;
+        return $returnResultCollection;
     }
 
 

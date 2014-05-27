@@ -171,7 +171,17 @@ class FetchResultCollection implements Countable, Iterator
             }
             $pk = $this->primaryKey;
             $itemIndex = $entity->$pk;
+
+            // Check it's not already there
+            if (array_key_exists($itemIndex, $this->items)) {
+                return;
+            }
         } else {
+            // Check it's not already there
+            if (false !== array_search($entity, $this->items, true)) {
+                return;
+            }
+
             // Use array index
             $itemIndex = count($this->items);
         }
@@ -198,18 +208,52 @@ class FetchResultCollection implements Countable, Iterator
     }
 
 
-    public function getItemByIndex($indexName, $value)
+    public function removeEntity($entity)
+    {
+        // Remove from indexes
+        foreach($this->indexNames as $indexName) {
+            // Check index value exists on the entity
+            if (!property_exists($entity, $indexName)) {
+                throw new Exception(sprintf('Cannot remove entity, missing index: [%s] in entity: [%s]', $indexName, serialize($entity)));
+            }
+
+            // Create index value entry if required
+            $indexValue = $entity->$indexName;
+            if (array_key_exists($indexValue, $this->indexValues[$indexName])) {
+                $deleteKey = array_search($entity, $this->indexValues[$indexName][$indexValue], true);
+                if (false !== $deleteKey) {
+                    unset($this->indexValues[$indexName][$indexValue][$deleteKey]);
+                }
+            }
+        }
+
+        // Remove from primary
+        if ($this->primaryKey) {
+            // Via key
+            $pk = $this->primaryKey;
+            unset($this->items[$entity->$pk]);
+        } else {
+            // By search
+            $deleteKey = array_search($entity, $this->items, true);
+            if (false !== $deleteKey) {
+                unset($this->items[$deleteKey]);
+            }
+        }
+    }
+
+
+    public function getEntitiesByIndex($indexName, $value)
     {
         if ($this->primaryKey == $indexName) {
             // Use primary key
-            return array_key_exists($value, $this->items) ? $this->items[$value] : null;
+            return array_key_exists($value, $this->items) ? array($this->items[$value]) : array();
         } else if (in_array($indexName, $this->indexNames)) {
             // Use index
             $itemIndexes = null;
             if (array_key_exists($value, $this->indexValues[$indexName])) {
                 $itemIndexes = &$this->indexValues[$indexName][$value];
             }
-            return $itemIndexes && count($itemIndexes) ? $itemIndexes[0] : null;
+            return $itemIndexes && count($itemIndexes) ? $itemIndexes : array();
         } else {
             // oh dear
             throw new Exception(sprintf('Undefined index:[%s]', $indexName));
