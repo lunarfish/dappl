@@ -99,8 +99,8 @@ $input = new FetchResultCollection();
 $rootNode->prepare($input);
 do {
     $result = $rootNode->fetch();
-    if (is_array($result)) {
-        echo 'We have a result set: ' . count($result[0]) . PHP_EOL;
+    if ($result) {
+        echo 'We have a result set: ' . count($result) . PHP_EOL;
 //var_dump($result[]);
         $total += count($result[0]);
     }

@@ -64,7 +64,7 @@ class BatchFetchCursor
             if (!$result) {
                 break;
             }
-            $resultCollection->addEntity($result);
+            $resultCollection->addEntity((object)$result);
             $i--;
         }
         return $resultCollection;
@@ -79,30 +79,46 @@ class BatchFetchCursor
 
 
 
-class FetchResultCollection implements Countable
+class FetchResultCollection implements Countable, Iterator
 {
     private $items;
     private $primaryKey;
     private $indexNames;
     private $indexValues;
+    private $fetchNode;
 
 
-    public function __construct()
+    public function __construct(FetchNode $fetchNode = null)
     {
         $this->items = array();
         $this->indexNames = array();
         $this->indexValues = array();
+        $this->fetchNode = $fetchNode;
+    }
+
+
+    public function getFetchNode()
+    {
+        return $this->fetchNode;
     }
 
 
     public function setPrimaryKeyName($primaryKeyName)
     {
-        // At the moment keep things simple and require keys and indexes to be set upfront
-        if (count($this->items)) {
-            throw new Exception('Cannot set primary key, we already have items stored');
-        }
+        if (!empty($primaryKeyName)) {
+            // At the moment keep things simple and require keys and indexes to be set upfront
+            if (count($this->items)) {
+                throw new Exception('Cannot set primary key, we already have items stored');
+            }
 
-        $this->primaryKey = $primaryKeyName;
+            $this->primaryKey = $primaryKeyName;
+        }
+    }
+
+
+    public function getPrimaryKeyName()
+    {
+        return $this->primaryKey;
     }
 
 
@@ -113,21 +129,48 @@ class FetchResultCollection implements Countable
             throw new Exception('Cannot add index, we already have items stored');
         }
 
-        $this->indexNames[] = $indexName;
-        $this->indexValues[$indexName] = array();
+        // Ignore nothing or if the index is already defined as primary key
+        if (empty($indexName) || ($this->primaryKey == $indexName)) {
+            return;
+        }
+
+        if (!in_array($indexName, $this->indexNames)) {
+            $this->indexNames[] = $indexName;
+            $this->indexValues[$indexName] = array();
+        }
     }
 
 
-    public function addEntity(array $entity)
+    public function addIndexNames(array $indexNames)
     {
+        foreach($indexNames as $indexName) {
+            $this->addIndex($indexName);
+        }
+    }
+
+
+    public function getIndexNames()
+    {
+        return $this->indexNames;
+    }
+
+
+    public function addEntity($entity)
+    {
+        // Sanity check
+        if (!$entity || !is_object($entity)) {
+            throw new Exception('Error - cannot add entity with value: ' . serialize($entity));
+        }
+
         // Add to items either by primary key or normal array index
         $itemIndex = null;
         if ($this->primaryKey) {
             // Use entity primary key value
-            if (!array_key_exists($this->primaryKey, $entity)) {
+            if (!property_exists($entity, $this->primaryKey)) {
                 throw new Exception(sprintf('Cannot add entity to fetch result collection, missing primary key: [%s] in entity: [%s]', $this->primaryKey, serialize($entity)));
             }
-            $itemIndex = $entity[$this->primaryKey];
+            $pk = $this->primaryKey;
+            $itemIndex = $entity->$pk;
         } else {
             // Use array index
             $itemIndex = count($this->items);
@@ -139,18 +182,37 @@ class FetchResultCollection implements Countable
         // Add the item index to each index
         foreach($this->indexNames as $indexName) {
             // Check index value exists on the entity
-            if (!array_key_exists($indexName, $entity)) {
+            if (!property_exists($entity, $indexName)) {
                 throw new Exception(sprintf('Cannot add entity to fetch result collection, missing index: [%s] in entity: [%s]', $indexName, serialize($entity)));
             }
 
             // Create index value entry if required
-            $indexValue = $entity[$indexName];
+            $indexValue = $entity->$indexName;
             if (!array_key_exists($indexValue, $this->indexValues[$indexName])) {
                 $this->indexValues[$indexName][$indexValue] = array();
             }
 
             // Store item index. Now we can refer back to all the entities matching this index value
-            $this->indexValues[$indexName][$indexValue][] = $itemIndex;
+            $this->indexValues[$indexName][$indexValue][] = $entity;
+        }
+    }
+
+
+    public function getItemByIndex($indexName, $value)
+    {
+        if ($this->primaryKey == $indexName) {
+            // Use primary key
+            return array_key_exists($value, $this->items) ? $this->items[$value] : null;
+        } else if (in_array($indexName, $this->indexNames)) {
+            // Use index
+            $itemIndexes = null;
+            if (array_key_exists($value, $this->indexValues[$indexName])) {
+                $itemIndexes = &$this->indexValues[$indexName][$value];
+            }
+            return $itemIndexes && count($itemIndexes) ? $itemIndexes[0] : null;
+        } else {
+            // oh dear
+            throw new Exception(sprintf('Undefined index:[%s]', $indexName));
         }
     }
 
@@ -177,7 +239,7 @@ class FetchResultCollection implements Countable
             // Brute force - no index defined for this field
 echo __METHOD__ . '(' . $fieldName . ') using brute force!!!' . PHP_EOL;
             $pkList = array();
-            foreach($this->items as $entity) {
+            foreach($this->items as &$entity) {
                 // Store keys in array index to prevent dupes
                 $pkList[$entity[$fieldName]] = true;
             }
@@ -195,5 +257,34 @@ echo __METHOD__ . '(' . $fieldName . ') using brute force!!!' . PHP_EOL;
     public function count()
     {
         return count($this->items);
+    }
+
+
+    /**
+     * Very basic support iterator interface, operating directly on the items array.
+     * Fetches to objects during iteration may mess things up...!
+     * Want to later be able to implement iterating by predefined index via
+     * something like iterateByIndexName()
+     */
+    public function rewind() {
+        return reset($this->items);
+    }
+
+    public function current() {
+        return current($this->items);
+    }
+
+    public function key() {
+        return key($this->items);
+    }
+
+    public function next() {
+        return next($this->items);
+    }
+
+    public function valid() {
+        $key = key($this->items);
+//echo sprintf('key: %s, value: %s', key($this->items), json_encode(current($this->items))) . PHP_EOL;
+        return !empty($key);
     }
 }

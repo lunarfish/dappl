@@ -1,7 +1,13 @@
 <?php
 
 
-
+/**
+ * Note we don't store the navagation property name here as that is only relevant to a particular entity.
+ * This is due to inverse relationships, if defined this object represents the details for two navigation
+ * properties, the 'forward' one and the inverse one.
+ *
+ * Class NavigationProperty
+ */
 class NavigationProperty {
 
     private $entityKey;

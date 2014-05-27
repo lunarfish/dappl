@@ -16,6 +16,7 @@ class FetchNode
 
     private $parent;
     private $navigationProperty;
+    private $navigationPropertyName;
 
     private $storageManager;
     private $batchFetchCursor;
@@ -23,7 +24,6 @@ class FetchNode
 
     // New format data
     private $inputData;
-    private $nodeData;
     private $childNodeResults;
     private $fetchResultCollection;
 
@@ -61,13 +61,30 @@ class FetchNode
         // First ensure navigation property exists
         $nodeMetadata = $this->baseRequest->getMetadata();
         $navigationProperty = $this->metadataManager->getNavigationProperty($nodeMetadata->getEntityName(), $navigationPropertyName);
-        $node->setNavigationProperty($navigationProperty);
+        $node->setNavigationProperty($navigationProperty, $navigationPropertyName);
+
+        // Add the key the child will lock onto as an index of our results collection
+        $fetchResultCollection = $this->getFetchResultCollection();
+        $fetchResultCollection->addIndex($navigationProperty->getEntityKey());
     }
 
 
-    public function setNavigationProperty(NavigationProperty $navigationProperty)
+    public function setNavigationProperty(NavigationProperty $navigationProperty, $navigationPropertyName)
     {
         $this->navigationProperty = $navigationProperty;
+        $this->navigationPropertyName = $navigationPropertyName;
+    }
+
+
+    public function getNavigationProperty()
+    {
+        return $this->navigationProperty;
+    }
+
+
+    public function getNavigationPropertyName()
+    {
+        return $this->navigationPropertyName;
     }
 
 
@@ -319,7 +336,7 @@ class FetchNode
     {
         if (!$this->fetchResultCollection) {
             // Create a new fetch result collection
-            $this->fetchResultCollection = new FetchResultCollection();
+            $this->fetchResultCollection = new FetchResultCollection($this);
 
             // Set primary key from our base request metadata
             $pk = $this->baseRequest->getMetadata()->getKey();
@@ -512,9 +529,70 @@ class FetchNode
     }
 
 
-    private function combineCompletedChildNodeResults(array $childResults, FetchResultCollection $nodeData)
+    /**
+     * Method to perform 2 critical tasks:
+     * 1. To filter out any fetched data that should not be part of the returned result for this node (assuming AND on all predicates)     *
+     * 2. To combine the fetched data into one result collection
+     *
+     * Process is:
+     * - Look at the last child results first. Link each last child result to the node results
+     * - Embed the last child result into the node entity navigation property
+     * - Call this the return result
+     * - Move to the next but last child.
+     * - Link each return result item to the next but last child item, and embed in it's navigation property
+     *
+     * @param array $childResults
+     * @param FetchResultCollection $nodeData
+     */
+    private function combineCompletedChildNodeResults(array $childResults, FetchResultCollection $nodeResultCollection)
     {
+        // Create a new result set to return.
+        $returnResultCollection = new FetchResultCollection();
 
+        // Define keys to match original node result collection
+        $returnResultCollection->setPrimaryKeyName($nodeResultCollection->getPrimaryKeyName());
+        $returnResultCollection->addIndexNames($nodeResultCollection->getIndexNames());
+
+        // Last child first
+        $childResultCollection = array_pop($childResults);
+
+        // Determine navigation property for this child node
+        $childFetchNode = $childResultCollection->getFetchNode();
+        $childNavigationProperty = $childFetchNode->getNavigationProperty();
+        $childNavigationPropertyName = $childFetchNode->getNavigationPropertyName();
+        $nodeKey = $childNavigationProperty->getRelatedEntityKey();
+        $childKey = $childNavigationProperty->getEntityKey();
+
+        // Iterate by the entity key
+        //$childResultCollection->iterateByIndexName($childNavigationProperty->getEntityKey());
+        foreach($childResultCollection as $childResultEntity) {
+            // Get the corresponding node entity
+            // (Assume for now there will only be one parent entity for one or many child entities)
+            // @todo: handle inverse relationships: many:1
+
+            // First see if it already exists in the new return results (eg we have a 1:many relationship and a
+            // previous child result has matched)
+            $nodeEntity = $returnResultCollection->getItemByIndex($nodeKey, $childResultEntity->$childKey);
+            if (!$nodeEntity) {
+                // Nope, fetch instead from the original node results and add it to the return result set
+                $nodeEntity = $nodeResultCollection->getItemByIndex($nodeKey, $childResultEntity->$childKey);
+                $returnResultCollection->addEntity($nodeEntity);
+            }
+
+            if (!$nodeEntity) {
+                throw new Exception(sprintf('Unable to match child node result: [%s] to this nodes core results: [%s]', serialize($childResultEntity), serialize($nodeResultCollection)));
+            }
+
+            // Create node entity navigation property, if required
+            if (!property_exists($nodeEntity, $childNavigationPropertyName)) {
+                $nodeEntity->$childNavigationPropertyName = array();
+            }
+
+            // Add child entity to the node entity
+            array_push($nodeEntity->$childNavigationPropertyName, $childResultEntity);
+        }
+
+        $z = 1;
     }
 
 
