@@ -7,19 +7,33 @@
  */
 
 
-interface FetchCursor
+/**
+ * Interface FetchCursor
+ *
+ * A base interface to be implemented by cursor objects for various data source types (MySQL, Mongo, etc)
+ */
+interface FetchCursorInterface
 {
+    /**
+     * Returns a data object on success or false on fail
+     * @return object | false
+     */
     public function getNext();
+
+    /**
+     * @return bool - true if the cursor has more data to fetch
+     */
     public function hasMore();
 }
 
 
-class MongoFetchCursor implements FetchCursor
+
+class MongoFetchCursor implements FetchCursorInterface
 {
     private $mongoCursor;
 
 
-        public function __construct(MongoCursor $cursor)
+    public function __construct(MongoCursor $cursor)
     {
         $this->mongoCursor = $cursor;
     }
@@ -29,7 +43,7 @@ class MongoFetchCursor implements FetchCursor
     {
         $result = false;
         if ($this->mongoCursor->hasNext()) {
-            $result = $this->mongoCursor->getNext();
+            $result = (object)$this->mongoCursor->getNext();
         }
         return $result;
     }
@@ -49,13 +63,18 @@ class BatchFetchCursor
     private $batchSize;
 
 
-    public function __construct(FetchCursor $cursor, $batchSize)
+    public function __construct(FetchCursorInterface $cursor, $batchSize)
     {
         $this->cursor = $cursor;
         $this->batchSize = $batchSize;
     }
 
 
+    /**
+     * Populate the fetch result collection with data from the current cursor, upto the batch size
+     * @param FetchResultCollection $resultCollection
+     * @return FetchResultCollection
+     */
     public function getNextBatch(FetchResultCollection $resultCollection)
     {
         $i = $this->batchSize;
@@ -64,7 +83,7 @@ class BatchFetchCursor
             if (!$result) {
                 break;
             }
-            $resultCollection->addEntity((object)$result);
+            $resultCollection->addEntity($result);
             $i--;
         }
         return $resultCollection;
@@ -97,12 +116,22 @@ class FetchResultCollection implements Countable, Iterator
     }
 
 
+    /**
+     * Returns the node owning this result collection. This should always return a value, apart from the collection
+     * passed to the root node in FetchNode::fetch()
+     * @return FetchNode
+     */
     public function getFetchNode()
     {
         return $this->fetchNode;
     }
 
 
+    /**
+     * Set the name of the primary key for entities stored in this collection
+     * @param $primaryKeyName
+     * @throws Exception
+     */
     public function setPrimaryKeyName($primaryKeyName)
     {
         if (!empty($primaryKeyName)) {
@@ -116,12 +145,21 @@ class FetchResultCollection implements Countable, Iterator
     }
 
 
+    /**
+     * Get the name of the primary key for entities stored in this collection
+     * @return mixed
+     */
     public function getPrimaryKeyName()
     {
         return $this->primaryKey;
     }
 
 
+    /**
+     * Adds an index. Must be called before any entities are added to the collection.
+     * @param $indexName
+     * @throws Exception
+     */
     public function addIndex($indexName)
     {
         // At the moment keep things simple and require keys and indexes to be set upfront
@@ -141,6 +179,10 @@ class FetchResultCollection implements Countable, Iterator
     }
 
 
+    /**
+     * Adds multiple indexes
+     * @param array $indexNames
+     */
     public function addIndexNames(array $indexNames)
     {
         foreach($indexNames as $indexName) {
@@ -149,6 +191,10 @@ class FetchResultCollection implements Countable, Iterator
     }
 
 
+    /**
+     * Return array of index names defined for this collection
+     * @return array
+     */
     public function getIndexNames()
     {
         return $this->indexNames;
@@ -156,8 +202,13 @@ class FetchResultCollection implements Countable, Iterator
 
 
     /**
-     * We have problems in our data. Some pk and fk values are stored as floats in mongo, and floats shouldn't be used as array indexes!
-     * As a workaround here we convert any floats to ints, although the correct way is to validate data type before storing!
+     * Returns the primary key value for given entity
+     *
+     * Throws exception if the entity does not possess the primary key property
+     *
+     * We have problems in our data. Some pk and fk values are stored as floats in mongo, and floats should not be used as array indexes!
+     * As a workaround here we convert any float values to int, although the correct way is to validate data type before storing!
+     *
      * @param $entity
      * @throws Exception
      * @return int | string
@@ -173,8 +224,13 @@ class FetchResultCollection implements Countable, Iterator
 
 
     /**
-     * We have problems in our data. Some pk and fk values are stored as floats in mongo, and floats shouldn't be used as array indexes!
-     * As a workaround here we convert any floats to ints, although the correct way is to validate data type before storing!
+     * Returns the index value for given entity
+     *
+     * Throws exception if the entity does not possess the index property
+     *
+     * We have problems in our data. Some pk and fk values are stored as floats in mongo, and floats should not be used as array indexes!
+     * As a workaround here we convert any float values to int, although the correct way is to validate data type before storing!
+     *
      * @param $entity
      * @param $indexName
      * @throws Exception
@@ -190,6 +246,16 @@ class FetchResultCollection implements Countable, Iterator
     }
 
 
+    /**
+     * Adds an entity to the collection, and stores via any primary key/indexes defined.
+     *
+     * If the entity is already stored it is ignored.
+     *
+     * Throws exception if entity is invalid
+     *
+     * @param $entity
+     * @throws Exception
+     */
     public function addEntity($entity)
     {
         // Sanity check
@@ -234,6 +300,11 @@ class FetchResultCollection implements Countable, Iterator
     }
 
 
+    /**
+     * Removes entity from the collection and removes any associated key/indexes
+     *
+     * @param $entity
+     */
     public function removeEntity($entity)
     {
         // Remove from indexes
@@ -262,6 +333,15 @@ class FetchResultCollection implements Countable, Iterator
     }
 
 
+    /**
+     * Returns an array of entities that match the index name. The index name can be the primary key or a secondary index.
+     * For consistency always returns an array of entities, even if the primary key is defined (so there can only be one result)
+     *
+     * @param $indexName
+     * @param $value
+     * @return array|null
+     * @throws Exception
+     */
     public function getEntitiesByIndex($indexName, $value)
     {
         // Clean input - handle some float values pk and fk values stored incorrectly in the db
@@ -286,6 +366,9 @@ class FetchResultCollection implements Countable, Iterator
     }
 
 
+    /**
+     * Removes all entities and indexes from the collection
+     */
     public function purge()
     {
         $this->items = array();
@@ -295,6 +378,12 @@ class FetchResultCollection implements Countable, Iterator
     }
 
 
+    /**
+     * Returns an array of key values for the give primary key/index
+     *
+     * @param $fieldName
+     * @return array|null
+     */
     public function getUniqueValues($fieldName)
     {
         $result = null;
@@ -306,7 +395,7 @@ class FetchResultCollection implements Countable, Iterator
             $result = array_keys($this->indexValues[$fieldName]);
         } else {
             // Brute force - no index defined for this field
-echo __METHOD__ . '(' . $fieldName . ') using brute force!!!' . PHP_EOL;
+            //echo __METHOD__ . '(' . $fieldName . ') using brute force!!!' . PHP_EOL;
             $pkList = array();
             foreach($this->items as &$entity) {
                 // Store keys in array index to prevent dupes
@@ -331,9 +420,13 @@ echo __METHOD__ . '(' . $fieldName . ') using brute force!!!' . PHP_EOL;
 
     /**
      * Very basic support iterator interface, operating directly on the items array.
-     * Fetches to objects during iteration may mess things up...!
+     * Fetching objects from the collection during iteration has not been tested...
      * Want to later be able to implement iterating by predefined index via
      * something like iterateByIndexName()
+     *
+     * May later also implement interfaces to provide recursive tree iteration,
+     * to flatten a results set with expands into a projection (flattened) result set
+     *
      */
     public function rewind() {
         return reset($this->items);

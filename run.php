@@ -84,7 +84,7 @@ $input = new FetchResultCollection();
 $rootNode->prepare($input);
 do {
     $result = $rootNode->fetch();
-    if ($result) {
+    if (is_object($result)) {
         echo 'We have a result set: ' . count($result) . PHP_EOL;
 //var_dump($result[]);
         $total += count($result);

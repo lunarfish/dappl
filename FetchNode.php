@@ -332,6 +332,11 @@ class FetchNode
     }
 
 
+    /**
+     * Lazy loads the fetch result collection for this node.
+     * @param bool $purge - if true removes all results from the collection.
+     * @return FetchResultCollection
+     */
     public function getFetchResultCollection($purge = false)
     {
         if (!$this->fetchResultCollection) {
@@ -392,8 +397,9 @@ class FetchNode
      * This method should be called multiple times until all results are returned
      *
      * Returns:
-     * - array of results - please call us again via fetch() to potentially get more
-     * - false if this batch is complete and we are ready for more input via prepare()
+     * - array of results: please call us again via fetch() to potentially get more
+     * - false: this batch is complete and we are ready for more input via prepare()
+     * - true: no results this time but the batch is not yet complete - please call us again via fetch() to get the rest
      *
      * @return false | array
      * @throws Exception
@@ -429,8 +435,8 @@ class FetchNode
             // Reset child results.
             $this->purgeChildNodes();
 
-            // Call ourselves to start over
-            return $this->fetch();
+            // Return true so we can get called again by the client
+            return true;
         } else {
             return $this->fetchFromLeafNode();
         }
@@ -504,6 +510,16 @@ class FetchNode
     }
 
 
+    /**
+     * For leaf nodes to fetch and return data in the nodes fetch result collection
+     *
+     * Returns:
+     * - array of results: please call us again via fetch() to potentially get more
+     * - false: this batch is complete and we are ready for more input via prepare()
+     * - true: no results this time but the batch is not yet complete - please call us again via fetch() to get the rest
+     *
+     * @return bool|FetchResultCollection
+     */
     private function fetchFromLeafNode()
     {
         // Is this leaf node done?
@@ -522,9 +538,8 @@ class FetchNode
         if (count($fetchResultCollection)) {
             return $fetchResultCollection;
         } else {
-            // Nothing this time.
-            // If we have more results to fetch from this cursor return false. Otherwise return true to show we are done now.
-            return false;
+            // Nothing this time, but we may have more. Please call again via fetch()
+            return true;
         }
     }
 
@@ -598,6 +613,10 @@ class FetchNode
     }
 
 
+    /**
+     * Log method for cli development/debugging
+     * @param $msg
+     */
     public function log($msg)
     {
         echo $this->getName() . ': ' . $msg . PHP_EOL;
