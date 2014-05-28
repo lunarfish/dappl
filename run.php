@@ -57,23 +57,25 @@ $extraRequest = new StorageRequest('Extras', $metadataManager->metadataForEntity
 
 // Limit nation search to 5 of each nation
 $fewNations = array(1, 2, 3, 4, 5, 11938, 12436, 12437, 12439, 12441, 12447, 12448, 12449, 12466, 12531, 13083, 13099, 13141, 13216, 13345);
-//$rootRequest->addFilter(array('LocationID' => array('$in' => $fewNations)));
+$rootRequest->addFilter(array('LocationID' => array('$in' => $fewNations)));
 
 // Add what we are looking for
 $nationRequest->addFilter(array('Nation' => $targetNation));
 
 $extraRequest->addFilter(array('ExtraValue' => array('$gt' => 25)));
 
+$countyRequest->addFilter(array('LookupNationID' => 3));
+
 // Configure nodes
 $rootNode = new FetchNode($metadataManager, $rootRequest, $storageManager, $batchSize, false);
 $countyNode = new FetchNode($metadataManager, $countyRequest, $storageManager, $batchSize, false);
 $rootNode->addChild($countyNode, 'LookupCountys');
 
-$nationNode = new FetchNode($metadataManager, $nationRequest, $storageManager, $batchSize, false);
-$countyNode->addChild($nationNode, 'LookupNations');
+//$nationNode = new FetchNode($metadataManager, $nationRequest, $storageManager, $batchSize, false);
+//$countyNode->addChild($nationNode, 'LookupNations');
 
 $extraNode = new FetchNode($metadataManager, $extraRequest, $storageManager, $batchSize, false);
-//$rootNode->addChild($extraNode, 'Extras');
+$rootNode->addChild($extraNode, 'Extras');
 
 
 

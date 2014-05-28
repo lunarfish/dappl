@@ -238,6 +238,10 @@ class FetchResultCollection implements Countable, Iterator
      */
     public function getIndexValue($entity, $indexName)
     {
+        if (empty($indexName)) {
+            throw new Exception('Cannot get index value, no index specified');
+        }
+
         // Check index value exists on the entity
         if (!property_exists($entity, $indexName)) {
             throw new Exception(sprintf('Cannot find index: [%s] in entity: [%s]', $indexName, serialize($entity)));
@@ -296,6 +300,18 @@ class FetchResultCollection implements Countable, Iterator
 
             // Store item index. Now we can refer back to all the entities matching this index value
             $this->indexValues[$indexName][$indexValue][] = $entity;
+        }
+    }
+
+
+    /**
+     * Convenience method to add multiple entities
+     * @param array $entities
+     */
+    public function addEntities(array $entities)
+    {
+        foreach($entities as $entity) {
+            $this->addEntity($entity);
         }
     }
 
