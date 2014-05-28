@@ -16,7 +16,6 @@ class FetchNode
 
     private $parent;
     private $navigationProperty;
-    private $navigationPropertyName;
 
     private $storageManager;
     private $batchFetchCursor;
@@ -61,7 +60,7 @@ class FetchNode
         // First ensure navigation property exists
         $nodeMetadata = $this->baseRequest->getMetadata();
         $navigationProperty = $this->metadataManager->getNavigationProperty($nodeMetadata->getEntityName(), $navigationPropertyName);
-        $node->setNavigationProperty($navigationProperty, $navigationPropertyName);
+        $node->setNavigationProperty($navigationProperty);
 
         // Add the key the child will lock onto as an index of our results collection
         $fetchResultCollection = $this->getFetchResultCollection();
@@ -69,22 +68,15 @@ class FetchNode
     }
 
 
-    public function setNavigationProperty(NavigationProperty $navigationProperty, $navigationPropertyName)
+    public function setNavigationProperty(NavigationProperty $navigationProperty)
     {
         $this->navigationProperty = $navigationProperty;
-        $this->navigationPropertyName = $navigationPropertyName;
     }
 
 
     public function getNavigationProperty()
     {
         return $this->navigationProperty;
-    }
-
-
-    public function getNavigationPropertyName()
-    {
-        return $this->navigationPropertyName;
     }
 
 
@@ -574,7 +566,7 @@ class FetchNode
         // Determine navigation property for this child node
         $childFetchNode = $childResultCollection->getFetchNode();
         $childNavigationProperty = $childFetchNode->getNavigationProperty();
-        $childNavigationPropertyName = $childFetchNode->getNavigationPropertyName();
+        $childNavigationPropertyName = $childNavigationProperty->getName();
         $nodeKey = $childNavigationProperty->getRelatedEntityKey();
         $childKey = $childNavigationProperty->getEntityKey();
 
@@ -594,18 +586,19 @@ class FetchNode
             // Now get all the result collection matches and embed the child entity
             $nodeEntities = $returnResultCollection->getEntitiesByIndex($nodeKey, $childResultEntity->$childKey);
             foreach($nodeEntities as $nodeEntity) {
+                if ($childNavigationProperty->isScalar()) {
+                    // Scalar navigation property, only one allowed so embed directly
+                    $nodeEntity->$childNavigationPropertyName = $childResultEntity;
+                } else {
+                    // Non scalar, multiple entity navigation property so embed in array
+                    // Create node entity navigation property, if required
+                    if (!property_exists($nodeEntity, $childNavigationPropertyName)) {
+                        $nodeEntity->$childNavigationPropertyName = array();
+                    }
 
-
-                // @todo: for scalar nav property, do not embed in an array.
-
-
-                // Create node entity navigation property, if required
-                if (!property_exists($nodeEntity, $childNavigationPropertyName)) {
-                    $nodeEntity->$childNavigationPropertyName = array();
+                    // Add child entity to the node entity
+                    array_push($nodeEntity->$childNavigationPropertyName, $childResultEntity);
                 }
-
-                // Add child entity to the node entity
-                array_push($nodeEntity->$childNavigationPropertyName, $childResultEntity);
             }
         }
 

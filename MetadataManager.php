@@ -72,6 +72,7 @@ class MetadataManager {
 
         $entityKey = null;
         $relatedEntityKey = null;
+        $isScalar = false;
 
         // Get the entity metadata
         $entityMetadata = $this->metadataForEntity($entityName);
@@ -82,8 +83,10 @@ class MetadataManager {
             throw new Exception(sprintf('Navigation property: [%s] does not exist on entity: [%s]', $navigationPropertyName, $entityName));
         }
 
+        $navigationProperty = new NavigationProperty($navigationPropertyName, $entityRaw);
+
         // First big question - is it scalar?
-        if ($entityRaw['isScalar']) {
+        if ($navigationProperty->isScalar()) {
             // Yes, it's a 1:1 relationship. We should have a foreignKey defined which maps to the primary key of the host entity.
             if (!array_key_exists('foreignKeyNames', $entityRaw) || !count($entityRaw['foreignKeyNames'])) {
                 throw new Exception(sprintf('Illegal navigation property definition [%s.%s]. A 1:1 property must have foreignKeyNames defined', $entityName, $navigationPropertyName));
@@ -94,7 +97,7 @@ class MetadataManager {
 
             // Now get the related entity metadata, so we can get it's primary key
             $stripNamespace = true;
-            $relatedEntityName = NavigationProperty::getEntityTypeName($entityRaw, $stripNamespace);
+            $relatedEntityName = $navigationProperty->getEntityTypeName($stripNamespace);
             $relatedEntityMetadata = $this->metadataForEntity($relatedEntityName);
             $relatedEntityKey = $relatedEntityMetadata->getKey();
             if (!$relatedEntityKey) {
@@ -117,7 +120,8 @@ class MetadataManager {
             }
         }
 
-        return new NavigationProperty($entityKey, $relatedEntityKey);
+        $navigationProperty->setKeys($entityKey, $relatedEntityKey);
+        return $navigationProperty;
     }
 
 
