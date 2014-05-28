@@ -57,7 +57,7 @@ $extraRequest = new StorageRequest('Extras', $metadataManager->metadataForEntity
 
 // Limit nation search to 5 of each nation
 $fewNations = array(1, 2, 3, 4, 5, 11938, 12436, 12437, 12439, 12441, 12447, 12448, 12449, 12466, 12531, 13083, 13099, 13141, 13216, 13345);
-$rootRequest->addFilter(array('LocationID' => array('$in' => $fewNations)));
+//$rootRequest->addFilter(array('LocationID' => array('$in' => $fewNations)));
 
 // Add what we are looking for
 $nationRequest->addFilter(array('Nation' => $targetNation));
@@ -76,21 +76,6 @@ $extraNode = new FetchNode($metadataManager, $extraRequest, $storageManager, $ba
 //$rootNode->addChild($extraNode, 'Extras');
 
 
-// Run the graph - original version with batch fetching (sub nodes could generate large arrays despite batching though)
-/*$result = null;
-$total = 0;
-do {
-    $rootResults = array();
-    $result = $rootNode->execute($rootResults);
-    // do something with rootResults...
-    if (count($rootResults)) {
-        //echo 'Answer is:' . PHP_EOL;
-        //var_dump($rootResults);
-        $total += count($rootResults);
-    }
-} while($result);
-*/
-
 
 // Second version - results are output within child node batch cycles to ensure we never consume too much memory
 $total = 0;
@@ -102,7 +87,7 @@ do {
     if ($result) {
         echo 'We have a result set: ' . count($result) . PHP_EOL;
 //var_dump($result[]);
-        $total += count($result[0]);
+        $total += count($result);
     }
 } while(false !== $result);
 

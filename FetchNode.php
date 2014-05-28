@@ -547,7 +547,7 @@ class FetchNode
     private function combineCompletedChildNodeResults(array $childResults, FetchResultCollection $nodeResultCollection)
     {
         // Create a new result set to return.
-        $returnResultCollection = new FetchResultCollection();
+        $returnResultCollection = new FetchResultCollection($this);
 
         // Define keys to match original node result collection
         $returnResultCollection->setPrimaryKeyName($nodeResultCollection->getPrimaryKeyName());

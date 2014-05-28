@@ -155,6 +155,41 @@ class FetchResultCollection implements Countable, Iterator
     }
 
 
+    /**
+     * We have problems in our data. Some pk and fk values are stored as floats in mongo, and floats shouldn't be used as array indexes!
+     * As a workaround here we convert any floats to ints, although the correct way is to validate data type before storing!
+     * @param $entity
+     * @throws Exception
+     * @return int | string
+     */
+    public function getPrimaryKeyValue($entity)
+    {
+        if (!property_exists($entity, $this->primaryKey)) {
+            throw new Exception(sprintf('Cannot find primary key: [%s] in entity: [%s]', $this->primaryKey, serialize($entity)));
+        }
+        $pk = $this->primaryKey;
+        return is_float($entity->$pk) ? (int)$entity->$pk : $entity->$pk;
+    }
+
+
+    /**
+     * We have problems in our data. Some pk and fk values are stored as floats in mongo, and floats shouldn't be used as array indexes!
+     * As a workaround here we convert any floats to ints, although the correct way is to validate data type before storing!
+     * @param $entity
+     * @param $indexName
+     * @throws Exception
+     * @return int | string
+     */
+    public function getIndexValue($entity, $indexName)
+    {
+        // Check index value exists on the entity
+        if (!property_exists($entity, $indexName)) {
+            throw new Exception(sprintf('Cannot find index: [%s] in entity: [%s]', $indexName, serialize($entity)));
+        }
+        return is_float($entity->$indexName) ? (int)$entity->$indexName : $entity->$indexName;
+    }
+
+
     public function addEntity($entity)
     {
         // Sanity check
@@ -166,11 +201,7 @@ class FetchResultCollection implements Countable, Iterator
         $itemIndex = null;
         if ($this->primaryKey) {
             // Use entity primary key value
-            if (!property_exists($entity, $this->primaryKey)) {
-                throw new Exception(sprintf('Cannot add entity to fetch result collection, missing primary key: [%s] in entity: [%s]', $this->primaryKey, serialize($entity)));
-            }
-            $pk = $this->primaryKey;
-            $itemIndex = $entity->$pk;
+            $itemIndex = $this->getPrimaryKeyValue($entity);
 
             // Check it's not already there
             if (array_key_exists($itemIndex, $this->items)) {
@@ -191,13 +222,8 @@ class FetchResultCollection implements Countable, Iterator
 
         // Add the item index to each index
         foreach($this->indexNames as $indexName) {
-            // Check index value exists on the entity
-            if (!property_exists($entity, $indexName)) {
-                throw new Exception(sprintf('Cannot add entity to fetch result collection, missing index: [%s] in entity: [%s]', $indexName, serialize($entity)));
-            }
-
             // Create index value entry if required
-            $indexValue = $entity->$indexName;
+            $indexValue = $this->getIndexValue($entity, $indexName);
             if (!array_key_exists($indexValue, $this->indexValues[$indexName])) {
                 $this->indexValues[$indexName][$indexValue] = array();
             }
@@ -212,13 +238,8 @@ class FetchResultCollection implements Countable, Iterator
     {
         // Remove from indexes
         foreach($this->indexNames as $indexName) {
-            // Check index value exists on the entity
-            if (!property_exists($entity, $indexName)) {
-                throw new Exception(sprintf('Cannot remove entity, missing index: [%s] in entity: [%s]', $indexName, serialize($entity)));
-            }
-
             // Create index value entry if required
-            $indexValue = $entity->$indexName;
+            $indexValue = $this->getIndexValue($entity, $indexName);
             if (array_key_exists($indexValue, $this->indexValues[$indexName])) {
                 $deleteKey = array_search($entity, $this->indexValues[$indexName][$indexValue], true);
                 if (false !== $deleteKey) {
@@ -229,9 +250,8 @@ class FetchResultCollection implements Countable, Iterator
 
         // Remove from primary
         if ($this->primaryKey) {
-            // Via key
-            $pk = $this->primaryKey;
-            unset($this->items[$entity->$pk]);
+            // Via primary key
+            unset($this->items[$this->getPrimaryKeyValue($entity)]);
         } else {
             // By search
             $deleteKey = array_search($entity, $this->items, true);
@@ -244,6 +264,11 @@ class FetchResultCollection implements Countable, Iterator
 
     public function getEntitiesByIndex($indexName, $value)
     {
+        // Clean input - handle some float values pk and fk values stored incorrectly in the db
+        if (is_float($value)) {
+            $value = (int)$value;
+        }
+
         if ($this->primaryKey == $indexName) {
             // Use primary key
             return array_key_exists($value, $this->items) ? array($this->items[$value]) : array();
@@ -328,7 +353,6 @@ echo __METHOD__ . '(' . $fieldName . ') using brute force!!!' . PHP_EOL;
 
     public function valid() {
         $key = key($this->items);
-//echo sprintf('key: %s, value: %s', key($this->items), json_encode(current($this->items))) . PHP_EOL;
-        return !empty($key);
+        return !is_null($key);
     }
 }
