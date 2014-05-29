@@ -153,6 +153,7 @@ class FetchNode
             }
         }
         if ($purge) {
+            $this->log('getFetchResultCollection purge');
             $this->fetchResultCollection->purge();
         }
         return $this->fetchResultCollection;
@@ -175,7 +176,7 @@ class FetchNode
 
         // Create the cursor
         $this->batchFetchCursor = $this->storageManager->prepareBatchFetch($request, $this->batchSize);
-        $this->log('Created batch fetch cursor from input data rows: ' . count($inputResultCollection));
+        $this->log('Created new batch fetch cursor from input data rows: ' . count($inputResultCollection));
 
         // Clear our result collection
         $fetchResultCollection = $this->getFetchResultCollection(true);
@@ -216,8 +217,9 @@ class FetchNode
 
         // Fetch process depends on if we are a leaf or parent node
         if (count($this->children)) {
-            // Get results from child nodes
-            $result = $this->fetchFromChildNode(0);
+            // Get results from child nodes. If we previously returned result continue from the end
+            $startIndex = count($this->childNodeResults) ? count($this->childNodeResults) - 1 : 0;
+            $result = $this->fetchFromChildNode($startIndex);
             if ($result) {
                 // Child nodes returned a result, return it.
                 return $this->resultProcessor->combineNodeAndChildNodeResults($result, $this->getFetchResultCollection());
@@ -226,6 +228,7 @@ class FetchNode
             // Child nodes returned nothing. Maybe this node has more results to fetch from it's cursor?
             if (self::COMPLETE == $this->getState()) {
                 // Nope, we are done.
+                $this->log('Node completed base request. Purging ready to receive a new request');
                 $this->purge();
                 return false;
             }
@@ -233,7 +236,7 @@ class FetchNode
             // We have more, go get it.
             $fetchResultCollection = $this->getFetchResultCollection(true);
             $this->batchFetchCursor->getNextBatch($fetchResultCollection);
-            $this->log('Fetch parent - fetched data rows: ' . count($fetchResultCollection));
+            $this->log('Fetch parent - fetched data rows: ' . count($fetchResultCollection) . ' purging child nodes to receive new requests.');
 
             // Reset child results.
             $this->purgeChildNodes();
@@ -295,6 +298,7 @@ class FetchNode
         $state = $childNode->getState();
         if (self::COMPLETE === $state) {
             // This node is complete
+            $this->log('Child node: ' . $childNode->getName() . ' completed. Purging child node and removing results');
             $childNode->purge();
 
             // Remove results for this node and all above
@@ -352,9 +356,10 @@ class FetchNode
     private function fetchFromLeafNode()
     {
         // Is this leaf node done?
-        if (!$this->batchFetchCursor->hasMore()) {
+        if (self::COMPLETE == $this->getState()) {
             // No, we are done. Return false to indicate we are done with what we were given in the last prepare().
             // If you want us to do anything further, send us more input via prepare()
+            $this->log('Leaf node complete');
             return false;
         }
 
