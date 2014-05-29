@@ -59,6 +59,7 @@ $extraRequest = new StorageRequest('Extras', $metadataManager->metadataForEntity
 // Limit nation search to 5 of each nation
 $fewNations = array(1, 2, 3, 4, 5, 11938, 12436, 12437, 12439, 12441, 12447, 12448, 12449, 12466, 12531, 13083, 13099, 13141, 13216, 13345);
 $rootRequest->addFilter(array('LocationID' => array('$in' => $fewNations)));
+//$rootrequest->setSelect(array('LocationID', ''));
 
 // Add what we are looking for
 $nationRequest->addFilter(array('Nation' => $targetNation));
@@ -69,8 +70,8 @@ $countyRequest->addFilter(array('LookupNationID' => 3));
 
 // How do we want our results cooked? Either expanded or projection (flattened)
 // FetchNodeResultProjectionProcessor | FetchNodeResultExpandProcessor
-$resultProcessor = new FetchNodeResultProjectionProcessor();
-//$resultProcessor = new FetchNodeResultExpandProcessor();
+//$resultProcessor = new FetchNodeResultProjectionProcessor();
+$resultProcessor = new FetchNodeResultExpandProcessor();
 
 // Configure nodes
 $rootNode = new FetchNode($metadataManager, $rootRequest, $storageManager, $batchSize, $resultProcessor);
