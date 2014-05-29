@@ -11,7 +11,7 @@ class FetchNode
     private $metadataManager;
     private $baseRequest;
     private $batchSize;
-    private $shouldExpand;
+    private $resultProcessor;
     private $children;
 
     private $parent;
@@ -32,13 +32,13 @@ class FetchNode
     const COMPLETE = 2;
 
 
-    public function __construct(MetadataManager $metadataManager, StorageRequest $baseRequest, StorageManager $storageManager, $batchSize, $shouldExpand)
+    public function __construct(MetadataManager $metadataManager, StorageRequest $baseRequest, StorageManager $storageManager, $batchSize, FetchNodeResultProcessorInterface $resultProcessor)
     {
         $this->metadataManager = $metadataManager;
         $this->baseRequest = $baseRequest;
         $this->storageManager = $storageManager;
         $this->batchSize = $batchSize;
-        $this->shouldExpand = $shouldExpand;
+        $this->resultProcessor = $resultProcessor;
         $this->children = array();
         $this->parent = null;
 
@@ -83,201 +83,6 @@ class FetchNode
     public function getName()
     {
         return $this->baseRequest->getDefaultResourceName();
-    }
-
-
-    /*
-    public function execute(array &$sourceBatchResult)
-    {
-        // Do we have a cursor to work with?
-        if (!$this->batchFetchCursor) {
-            // Create a new batch request, from the original details provided when the node was created
-            $request = new StorageRequest($this->baseRequest->getDefaultResourceName(), $this->baseRequest->getMetadata());
-            $request->setFilter($this->baseRequest->getFilter());
-
-            // Add any extra filter from the source data - eg extract any relationship keys to filter by
-            $this->addFilterFromSourceData($request, $sourceBatchResult);
-
-            // Create the cursor
-            $this->batchFetchCursor = $this->storageManager->prepareBatchFetch($request, $this->batchSize);
-        }
-
-        // Fetch batch of results
-        $nodeBatchResult = $this->batchFetchCursor->getNextBatch();
-//var_dump($nodeBatchResult);
-
-        // Cascade to child nodes.
-        foreach($this->children as $child) {
-            // Iterate until each child node has completed it's processing for this batch of results.
-            while($child->execute($nodeBatchResult));
-        }
-
-        // This node and it's children have completed their fetches for this batch iteration.
-        // Now process the source: store expand data and mark items in the source that match
-        $this->processBatchIteration($sourceBatchResult, $nodeBatchResult);
-
-        if (!$this->batchFetchCursor->hasMore()) {
-            // We have processed all our results now for this source. Now we can remove any unmatched items from the source
-            $this->completeBatchFetch($sourceBatchResult);
-
-            // No more results, return false to indicate we are done for this batch iteration
-            return false;
-        }
-
-        // Return true to indicate we are done but there maybe further batches for this node
-        return true;
-    }*/
-
-
-    private function addFilterFromSourceData(StorageRequest $request, FetchResultCollection $inputResultCollection)
-    {
-        if ($this->navigationProperty) {
-            $nodeKey = $this->navigationProperty->getRelatedEntityKey();
-            $sourceKey = $this->navigationProperty->getEntityKey();
-
-/*            switch($request->getDefaultResourceName()) {
-                case 'Locations':
-                    // Do nothing
-                    return;
-                    break;
-
-                case 'LookupCountys':
-                    // Filter by the key that maps the previous entity to this entity (defined in the navigation property metadata)
-                    // Need to use a resolver for this - key could be in either entities metadata, depending on relation type: 1:1, 1:many
-                    $nodeKey = 'LookupCountyID';
-                    $sourceKey = 'LookupCountyID';
-                    break;
-
-                case 'LookupNations':
-                    $nodeKey = 'LookupNationID';
-                    $sourceKey = 'LookupNationID';
-                    break;
-
-                case 'CentresLinksLookupTargetAudiences':
-                    $nodeKey = 'CentreID';
-                    $sourceKey = 'LocationID';
-                    break;
-            }
-*/
-           /* $pkList = array();
-            foreach($sourceBatchResult as $row) {
-                // Store keys in array index to prevent dupes
-                $pkList[$row[$sourceKey]] = true;
-            }
-
-            $request->addFilter(array($nodeKey => array('$in' => array_keys($pkList)))); */
-
-            $request->addFilter(array($nodeKey => array('$in' => $inputResultCollection->getUniqueValues($sourceKey))));
-        }
-    }
-
-
-    private function processBatchIteration(array &$sourceBatchResult, array $nodeBatchResult)
-    {
-        // Now process the source: store expand data or delete unmatched entities
-
-        // @todo: expand here
-
-        if ($this->navigationProperty) {
-            $nodeKey = $this->navigationProperty->getRelatedEntityKey();
-            $sourceKey = $this->navigationProperty->getEntityKey();
-
-/*            switch($this->entityName) {
-                case 'Locations':
-                    // Do nothing
-
-
-                    // hack here. as this is the root we want to decant the node results into the source, so the client can retrieve the result
-                    foreach($nodeBatchResult as $row) {
-                        $sourceBatchResult[] = $row;
-                    }
-
-
-                    $nodeKey = 'LocationID';
-                    //$sourceKey = 'LocationID';
-                    break;
-
-                case 'LookupCountys':
-                    // Filter by the key that maps the previous entity to this entity (defined in the navigation property metadata)
-                    // Need to use a resolver for this - key could be in either entities metadata, depending on relation type: 1:1, 1:many
-                    $nodeKey = 'LookupCountyID';
-                    //$sourceKey = 'LookupCountyID';
-                    break;
-
-                case 'LookupNations':
-                    $nodeKey = 'LookupNationID';
-                    //$sourceKey = 'LookupNationID';
-                    break;
-
-                case 'CentresLinksLookupTargetAudiences':
-                    $nodeKey = 'CentreID';
-                    //$sourceKey = 'LocationID';
-                    break;
-            }*/
-
-            // Get the mapping key (key that links node to source) values of all our matched results
-            foreach($nodeBatchResult as $row) {
-                $this->keepList[$row[$nodeKey]] = true;
-            }
-        } else {
-            // hack here. as this is the root we want to decant the node results into the source, so the client can retrieve the result
-            foreach($nodeBatchResult as $row) {
-                $sourceBatchResult[] = $row;
-            }
-        }
-    }
-
-
-    private function completeBatchFetch(array &$sourceBatchResult)
-    {
-        // Remove original items that do not match the nodes results
-
-        // If this proves to be the right way to go we can optimise by storing results indexed by key hash.
-        // Key must be a key hash to allow for compound keys, so a compound key may look something like 1345.56.7
-        // Again metadata will save us here :-)
-        //$nodeKey = null;
-        /*$sourceKey = null;
-        switch($this->entityName) {
-            case 'Locations':
-                //$nodeKey = 'LocationID';
-                $sourceKey = 'LocationID';
-                break;
-
-            case 'LookupCountys':
-                //$nodeKey = 'LookupCountyID';
-                $sourceKey = 'LookupCountyID';
-                break;
-
-            case 'LookupNations':
-                //$nodeKey = 'LookupNationID';
-                $sourceKey = 'LookupNationID';
-                break;
-
-            case 'CentresLinksLookupTargetAudiences':
-                //$nodeKey = 'CentreID';
-                $sourceKey = 'LocationID';
-                break;
-        }*/
-
-        $sourceKey = 'LocationID';
-        if ($this->navigationProperty) {
-            $sourceKey = $this->navigationProperty->getEntityKey();
-
-            $indexesToRemove = array();
-            $keepList = array_keys($this->keepList);
-            foreach($sourceBatchResult as $i => $row) {
-                if (!in_array($row[$sourceKey], $keepList)) {
-                    $indexesToRemove[] = $i;
-                }
-            }
-
-            foreach($indexesToRemove as $bye) {
-                unset($sourceBatchResult[$bye]);
-            }
-        }
-
-        $this->batchFetchCursor = null;
-        $this->keepList = array();
     }
 
 
@@ -339,6 +144,12 @@ class FetchNode
             $pk = $this->baseRequest->getMetadata()->getKey();
             if ($pk) {
                 $this->fetchResultCollection->setPrimaryKeyName($pk);
+            }
+
+            // Set indexes from the relationship property
+            if ($this->navigationProperty) {
+                $childKey = $this->navigationProperty->getEntityKey();
+                $this->fetchResultCollection->addIndex($childKey);
             }
         }
         if ($purge) {
@@ -409,7 +220,7 @@ class FetchNode
             $result = $this->fetchFromChildNode(0);
             if ($result) {
                 // Child nodes returned a result, return it.
-                return $this->combineCompletedChildNodeResults($result, $this->getFetchResultCollection());
+                return $this->resultProcessor->combineNodeAndChildNodeResults($result, $this->getFetchResultCollection());
             }
 
             // Child nodes returned nothing. Maybe this node has more results to fetch from it's cursor?
@@ -431,6 +242,23 @@ class FetchNode
             return true;
         } else {
             return $this->fetchFromLeafNode();
+        }
+    }
+
+
+    /**
+     * When prepare is called we are passed a result collection from the previous node up the chain. This node should only fetch results
+     * related to these input results, using the navigation property details to specify the key.
+     *
+     * @param StorageRequest $request - The current request to ammend
+     * @param FetchResultCollection $inputResultCollection - The result set to extract filter from
+     */
+    private function addFilterFromSourceData(StorageRequest $request, FetchResultCollection $inputResultCollection)
+    {
+        if ($this->navigationProperty) {
+            $nodeKey = $this->navigationProperty->getRelatedEntityKey();
+            $sourceKey = $this->navigationProperty->getEntityKey();
+            $request->addFilter(array($nodeKey => array('$in' => $inputResultCollection->getUniqueValues($sourceKey))));
         }
     }
 
@@ -492,7 +320,7 @@ class FetchNode
                 // We have more than one child, this child should prepare from this node's results filtered by the previous childs results.
                 // It's this part that defines AND/OR logic between nodes. We are hard coding AND behavior here for now.
                 // (OR behavior would be to not filter the previous childs results)
-                $childPrepareResultCollection = $this->getFetchResultCollectionFilteredByNodeResults($nodeFetchResultCollection, $this->childNodeResults[$childIndex - 1]);
+                $childPrepareResultCollection = $this->newFetchResultCollectionFilteredByChildResults($nodeFetchResultCollection, $this->childNodeResults[$childIndex - 1]);
             }
 
             $childNode->prepare($childPrepareResultCollection);
@@ -546,126 +374,6 @@ class FetchNode
 
 
     /**
-     * Method to perform 2 critical tasks:
-     * 1. To filter out any fetched data that should not be part of the returned result for this node (assuming AND on all predicates)     *
-     * 2. To combine the fetched data into one result collection
-     *
-     * Process is:
-     * - Look at the last child results first. Link each last child result to the node results
-     * - Embed the last child result into the node entity navigation property
-     * - Call this the return result
-     * - Move to the next but last child.
-     * - Link each return result item to the next but last child item, and embed in it's navigation property
-     *
-     * IT MAY LOOK LIKE WE ARE DUPLICATING EFFORT - Some of this is processed in prepare().
-     * There probably can be a more efficient way of processing but this is done to decouple the setting up of the fetch tree
-     * to results returning back to the client code. It's important to decouple these so results can return before the entire tree
-     * has finished processing, to avoid possible fatal memory consumption for large datasets.
-     *
-     * @param array $childResults
-     * @param FetchResultCollection $nodeResultCollection
-     * @return \FetchResultCollection
-     */
-    private function combineCompletedChildNodeResults(array $childResults, FetchResultCollection $nodeResultCollection)
-    {
-        // Create a new result set to return.
-        $returnResultCollection = new FetchResultCollection($this);
-
-        // Define keys to match original node result collection
-        $returnResultCollection->setPrimaryKeyName($nodeResultCollection->getPrimaryKeyName());
-        $returnResultCollection->addIndexNames($nodeResultCollection->getIndexNames());
-
-        // Last child first - merge and embed matches in last child into result collection (3 way merge)
-        $childResultCollection = array_pop($childResults);
-        $this->createFetchResultCollectionEmbeddedWithChildResults($returnResultCollection, $nodeResultCollection, $childResultCollection);
-
-        // Process other child nodes. Iterate the result collection and embed and matching child results
-        while($childResultCollection = array_pop($childResults)) {
-            $this->embedMatchingChildResults($returnResultCollection, $childResultCollection);
-        }
-
-        return $returnResultCollection;
-    }
-
-
-    /**
-     * Embeds any child results that match the return results via their navigation property.
-     * @param FetchResultCollection $returnResultCollection
-     * @param FetchResultCollection $childResultCollection
-     */
-    public function embedMatchingChildResults(FetchResultCollection $returnResultCollection, FetchResultCollection $childResultCollection)
-    {
-        // Get the navigation property between the child collection and the base collection
-        $navigationProperty = $childResultCollection->getFetchNode()->getNavigationProperty();
-        $nodeKey = $navigationProperty->getRelatedEntityKey();
-        $childKey = $navigationProperty->getEntityKey();
-        $name = $navigationProperty->getName();
-
-        foreach($returnResultCollection as $nodeEntity) {
-            // Get matching child nodes
-            $childEntities = $childResultCollection->getEntitiesByIndex($childKey, $returnResultCollection->getIndexValue($nodeEntity, $nodeKey));
-            if ($navigationProperty->isScalar()) {
-                // For scalar properties the object is embedded directly
-                $childEntities = count($childEntities) ? $childEntities[0] : null;
-            }
-            $nodeEntity->$name = $childEntities;
-        }
-    }
-
-
-    /**
-     * Performs a 3 way merge. Takes entities in $nodeResultCollection that match related entities in $childResultCollection and puts them
-     * in $returnResultCollection. The child entities are embedded.
-     *
-     * @param FetchResultCollection $returnResultCollection
-     * @param FetchResultCollection $nodeResultCollection
-     * @param FetchResultCollection $childResultCollection
-     */
-    public function createFetchResultCollectionEmbeddedWithChildResults(FetchResultCollection $returnResultCollection, FetchResultCollection $nodeResultCollection, FetchResultCollection $childResultCollection)
-    {
-        // Determine navigation property for this child node
-        $childFetchNode = $childResultCollection->getFetchNode();
-        $childNavigationProperty = $childFetchNode->getNavigationProperty();
-        $childNavigationPropertyName = $childNavigationProperty->getName();
-        $nodeKey = $childNavigationProperty->getRelatedEntityKey();
-        $childKey = $childNavigationProperty->getEntityKey();
-
-        // Iterate by the entity key
-        //$childResultCollection->iterateByIndexName($childNavigationProperty->getEntityKey());
-        foreach($childResultCollection as $childResultEntity) {
-            // Get the corresponding node entity. First move any matches from node collection to return collection
-            // There maybe more than one, for many:1 relationships (eg LookupCounty -> LookupNation)
-            // (Moving records incase some of the matched entities are already in results, and some are in node collection
-            // -  this way we get them all)
-            $nodeEntities = $nodeResultCollection->getEntitiesByIndex($nodeKey, $childResultCollection->getIndexValue($childResultEntity, $childKey));
-            foreach($nodeEntities as $nodeEntity) {
-                $returnResultCollection->addEntity($nodeEntity);
-                $nodeResultCollection->removeEntity($nodeEntity);
-            }
-
-            // Now get all the result collection matches and embed the child entity
-            $nodeEntities = $returnResultCollection->getEntitiesByIndex($nodeKey, $childResultCollection->getIndexValue($childResultEntity, $childKey));
-            foreach($nodeEntities as $nodeEntity) {
-                if ($childNavigationProperty->isScalar()) {
-                    // Scalar navigation property, only one allowed so embed directly
-                    $nodeEntity->$childNavigationPropertyName = $childResultEntity;
-                } else {
-                    // Non scalar, multiple entity navigation property so embed in array
-                    // Create node entity navigation property, if required
-                    if (!property_exists($nodeEntity, $childNavigationPropertyName)) {
-                        $nodeEntity->$childNavigationPropertyName = array();
-                    }
-
-                    // Add child entity to the node entity
-                    array_push($nodeEntity->$childNavigationPropertyName, $childResultEntity);
-                }
-            }
-        }
-    }
-
-
-
-    /**
      * Creates a new result collection based on an input collection filtered by a result collection of a related entity.
      * The results should only have entities where the relationship exists, and therefore filters out any entities in the original
      * base that do not have related entities.
@@ -673,7 +381,7 @@ class FetchNode
      * @param $filterCollection
      * @return FetchResultCollection
      */
-    public function getFetchResultCollectionFilteredByNodeResults($baseCollection, $filterCollection)
+    public function newFetchResultCollectionFilteredByChildResults($baseCollection, $filterCollection)
     {
         // Create a new result set to return.
         $returnResultCollection = new FetchResultCollection($this);

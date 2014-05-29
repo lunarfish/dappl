@@ -23,6 +23,7 @@ require_once('StorageManager.php');
 require_once('EntityMetadata.php');
 require_once('MetadataManager.php');
 require_once('FetchNode.php');
+require_once('FetchNodeResultProcessor.php');
 
 // Input
 $targetNation = 'England';
@@ -66,15 +67,20 @@ $extraRequest->addFilter(array('ExtraValue' => array('$gt' => 25)));
 
 $countyRequest->addFilter(array('LookupNationID' => 3));
 
+// How do we want our results cooked? Either expanded or projection (flattened)
+// FetchNodeResultProjectionProcessor | FetchNodeResultExpandProcessor
+$resultProcessor = new FetchNodeResultProjectionProcessor();
+//$resultProcessor = new FetchNodeResultExpandProcessor();
+
 // Configure nodes
-$rootNode = new FetchNode($metadataManager, $rootRequest, $storageManager, $batchSize, false);
-$countyNode = new FetchNode($metadataManager, $countyRequest, $storageManager, $batchSize, false);
+$rootNode = new FetchNode($metadataManager, $rootRequest, $storageManager, $batchSize, $resultProcessor);
+$countyNode = new FetchNode($metadataManager, $countyRequest, $storageManager, $batchSize, $resultProcessor);
 $rootNode->addChild($countyNode, 'LookupCountys');
 
-//$nationNode = new FetchNode($metadataManager, $nationRequest, $storageManager, $batchSize, false);
+//$nationNode = new FetchNode($metadataManager, $nationRequest, $storageManager, $batchSize, $resultProcessor);
 //$countyNode->addChild($nationNode, 'LookupNations');
 
-$extraNode = new FetchNode($metadataManager, $extraRequest, $storageManager, $batchSize, false);
+$extraNode = new FetchNode($metadataManager, $extraRequest, $storageManager, $batchSize, $resultProcessor);
 $rootNode->addChild($extraNode, 'Extras');
 
 

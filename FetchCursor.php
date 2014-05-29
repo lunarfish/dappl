@@ -424,6 +424,16 @@ class FetchResultCollection implements Countable, Iterator
 
 
     /**
+     * Return a copy of all items in the collection
+     * @return array
+     */
+    public function getAll()
+    {
+        return $this->items;
+    }
+
+
+    /**
      * To support countable interface
      *
      * @return int
