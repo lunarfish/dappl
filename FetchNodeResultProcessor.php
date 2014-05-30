@@ -40,6 +40,11 @@ class FetchNodeResultExpandProcessor implements FetchNodeResultProcessorInterfac
      */
     public function combineNodeAndChildNodeResults(array $childResults, FetchResultCollection $nodeResultCollection)
     {
+        // HACK: protect original $nodeResultCollection - some of the operations here remove entities from $nodeResultCollection. Fine for single batch operations
+        //       but multiple batch calls with the incomplete $nodeResultCollection
+        //       @todo: alter algorithm to avoid having to do this.
+        $nodeResultCollection = clone $nodeResultCollection;
+
         // Create a new result set to return.
         $returnResultCollection = new FetchResultCollection($nodeResultCollection->getFetchNode());
 
@@ -60,12 +65,12 @@ class FetchNodeResultExpandProcessor implements FetchNodeResultProcessorInterfac
     }
 
 
-        /**
-         * Embeds any child results that match the return results via their navigation property.
-         * @param FetchResultCollection $returnResultCollection
-         * @param FetchResultCollection $childResultCollection
-         */
-        public function embedMatchingChildResults(FetchResultCollection $returnResultCollection, FetchResultCollection $childResultCollection)
+    /**
+     * Embeds any child results that match the return results via their navigation property.
+     * @param FetchResultCollection $returnResultCollection
+     * @param FetchResultCollection $childResultCollection
+     */
+    public function embedMatchingChildResults(FetchResultCollection $returnResultCollection, FetchResultCollection $childResultCollection)
     {
         // Get the navigation property between the child collection and the base collection
         $navigationProperty = $childResultCollection->getFetchNode()->getNavigationProperty();
@@ -85,15 +90,15 @@ class FetchNodeResultExpandProcessor implements FetchNodeResultProcessorInterfac
     }
 
 
-        /**
-         * Performs a 3 way merge. Takes entities in $nodeResultCollection that match related entities in $childResultCollection and puts them
-         * in $returnResultCollection. The child entities are embedded.
-         *
-         * @param FetchResultCollection $returnResultCollection
-         * @param FetchResultCollection $nodeResultCollection
-         * @param FetchResultCollection $childResultCollection
-         */
-        public function createFetchResultCollectionEmbeddedWithChildResults(FetchResultCollection $returnResultCollection, FetchResultCollection $nodeResultCollection, FetchResultCollection $childResultCollection)
+    /**
+     * Performs a 3 way merge. Takes entities in $nodeResultCollection that match related entities in $childResultCollection and puts them
+     * in $returnResultCollection. The child entities are embedded.
+     *
+     * @param FetchResultCollection $returnResultCollection
+     * @param FetchResultCollection $nodeResultCollection
+     * @param FetchResultCollection $childResultCollection
+     */
+    public function createFetchResultCollectionEmbeddedWithChildResults(FetchResultCollection $returnResultCollection, FetchResultCollection $nodeResultCollection, FetchResultCollection $childResultCollection)
     {
         // Determine navigation property for this child node
         $childFetchNode = $childResultCollection->getFetchNode();
@@ -170,6 +175,11 @@ class FetchNodeResultProjectionProcessor implements FetchNodeResultProcessorInte
      */
     public function combineNodeAndChildNodeResults(array $childResults, FetchResultCollection $nodeResultCollection)
     {
+        // HACK: protect original $nodeResultCollection - some of the operations here remove entities from $nodeResultCollection. Fine for single batch operations
+        //       but multiple batch calls with the incomplete $nodeResultCollection
+        //       @todo: alter algorithm to avoid having to do this.
+        $nodeResultCollection = clone $nodeResultCollection;
+
         // Create a new result set to return.
         $returnResultCollection = new FetchResultCollection($nodeResultCollection->getFetchNode());
 
@@ -192,6 +202,22 @@ class FetchNodeResultProjectionProcessor implements FetchNodeResultProcessorInte
             }
         }
 
+        // If the node result collection is from the root node, we can strip fields down to those defined in $select of requests.
+        $fetchNode = $returnResultCollection->getFetchNode();
+        if ($fetchNode->isRoot()) {
+            // Extract all required fields from the node tree
+            $fields = array();
+            $fetchNode->getSelectFields($fields);
+
+            // Crop result entities to those fields
+            foreach($returnResultCollection as $entity) {
+                foreach($entity as $key => $value) {
+                    if (!in_array($key , $fields)) {
+                        unset($entity->$key);
+                    }
+                }
+            }
+        }
 
         return $returnResultCollection;
     }

@@ -86,6 +86,33 @@ class FetchNode
     }
 
 
+    public function isRoot()
+    {
+        return $this->parent ? false : true;
+    }
+
+
+    public function getSelectFields(array &$fields, $namespace = '')
+    {
+        // Concatenate input namespace with the localnamespace (navigation property name)
+        $localNamespace = $this->navigationProperty ? $this->navigationProperty->getName() : '';
+        $namespace = empty($namespace) ? '' : ($namespace . '.');
+        $prefix = $namespace . $localNamespace;
+        $addPrefix = empty($prefix) ? '' : ($prefix . '.');
+
+        // Add $select fields for this node
+        $nodeFields = $this->baseRequest->getSelect();
+        foreach($nodeFields as $nodeField) {
+            $fields[] = $addPrefix . $nodeField;
+        }
+
+        // Handle child nodes
+        foreach($this->children as $childNode) {
+            $childNode->getSelectFields($fields, $prefix);
+        }
+    }
+
+
     /**
      * Clears any current cursor. This resets the state of this node to UNREADY
      * Also purges any child nodes belonging to this node.
@@ -419,6 +446,6 @@ class FetchNode
      */
     public function log($msg)
     {
-        echo $this->getName() . ': ' . $msg . PHP_EOL;
+        //echo $this->getName() . ': ' . $msg . PHP_EOL;
     }
 } 

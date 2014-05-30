@@ -59,19 +59,22 @@ $extraRequest = new StorageRequest('Extras', $metadataManager->metadataForEntity
 // Limit nation search to 5 of each nation
 $fewNations = array(1, 2, 3, 4, 5, 11938, 12436, 12437, 12439, 12441, 12447, 12448, 12449, 12466, 12531, 13083, 13099, 13141, 13216, 13345);
 $rootRequest->addFilter(array('LocationID' => array('$in' => $fewNations)));
-//$rootrequest->setSelect(array('LocationID', ''));
+$rootRequest->setSelect(array('LocationID', 'Address1', 'PostCode', 'LookupCountyID'));
 
 // Add what we are looking for
 $nationRequest->addFilter(array('Nation' => $targetNation));
+//$nationRequest->setSelect(array('LocationID', 'Address1', 'PostCode'));
 
 $extraRequest->addFilter(array('ExtraValue' => array('$gt' => 25)));
 
 $countyRequest->addFilter(array('LookupNationID' => 3));
+$countyRequest->setSelect(array('LookupCountyID', 'Description'));
+
 
 // How do we want our results cooked? Either expanded or projection (flattened)
 // FetchNodeResultProjectionProcessor | FetchNodeResultExpandProcessor
-//$resultProcessor = new FetchNodeResultProjectionProcessor();
-$resultProcessor = new FetchNodeResultExpandProcessor();
+$resultProcessor = new FetchNodeResultProjectionProcessor();
+//$resultProcessor = new FetchNodeResultExpandProcessor();
 
 // Configure nodes
 $rootNode = new FetchNode($metadataManager, $rootRequest, $storageManager, $batchSize, $resultProcessor);
@@ -82,7 +85,7 @@ $rootNode->addChild($countyNode, 'LookupCountys');
 //$countyNode->addChild($nationNode, 'LookupNations');
 
 $extraNode = new FetchNode($metadataManager, $extraRequest, $storageManager, $batchSize, $resultProcessor);
-$rootNode->addChild($extraNode, 'Extras');
+//$rootNode->addChild($extraNode, 'Extras');
 
 
 
@@ -95,6 +98,9 @@ do {
     $result = $rootNode->fetch();
     if (is_object($result)) {
         echo 'We have a result set: ' . count($result) . PHP_EOL;
+        foreach($result as $row) {
+            echo json_encode($row) . PHP_EOL;
+        }
 //var_dump($result[]);
         $total += count($result);
     }

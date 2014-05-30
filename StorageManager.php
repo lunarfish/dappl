@@ -38,11 +38,11 @@ class StorageManager
         // All mongo code for testing. Split out later to driver classes
         $collection = $this->mongoDB->selectCollection($request->getDefaultResourceName());
         $cursor = $collection->find($request->getFilter());
-echo sprintf('Storage request on: %s, filter: %s, results: %d %s',
+/*echo sprintf('Storage request on: %s, filter: %s, results: %d %s',
              $request->getDefaultResourceName(),
              json_encode($request->getFilter()),
              $cursor->count(),
-             PHP_EOL);
+             PHP_EOL);*/
         return new MongoFetchCursor($cursor);
     }
 

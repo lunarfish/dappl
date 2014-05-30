@@ -11,6 +11,7 @@ class StorageRequest
     private $defaultResourceName;
     private $filter;
     private $metadata;
+    private $select;
 
 
     public function __construct($defaultResourceName, EntityMetadata $metadata)
@@ -43,6 +44,18 @@ class StorageRequest
     public function getFilter()
     {
         return $this->filter;
+    }
+
+
+    public function setSelect(array $select)
+    {
+        $this->select = $select;
+    }
+
+
+    public function getSelect()
+    {
+        return $this->select;
     }
 
 
