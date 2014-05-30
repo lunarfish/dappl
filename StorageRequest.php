@@ -55,7 +55,7 @@ class StorageRequest
 
     public function getSelect()
     {
-        return $this->select;
+        return $this->select ? $this->select : array();
     }
 
 

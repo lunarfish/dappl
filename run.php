@@ -66,6 +66,7 @@ $nationRequest->addFilter(array('Nation' => $targetNation));
 //$nationRequest->setSelect(array('LocationID', 'Address1', 'PostCode'));
 
 $extraRequest->addFilter(array('ExtraValue' => array('$gt' => 25)));
+$extraRequest->setSelect(array('ExtraValue'));
 
 $countyRequest->addFilter(array('LookupNationID' => 3));
 $countyRequest->setSelect(array('LookupCountyID', 'Description'));
@@ -85,7 +86,7 @@ $rootNode->addChild($countyNode, 'LookupCountys');
 //$countyNode->addChild($nationNode, 'LookupNations');
 
 $extraNode = new FetchNode($metadataManager, $extraRequest, $storageManager, $batchSize, $resultProcessor);
-//$rootNode->addChild($extraNode, 'Extras');
+$rootNode->addChild($extraNode, 'Extras');
 
 
 

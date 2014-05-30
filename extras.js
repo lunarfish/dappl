@@ -1,7 +1,3 @@
-/**
- * Created by rick on 22/05/2014.
- */
-
 // Create some extras data. ~50 values per location id, ranging from 1-50
 var extraCountMin = 20,
     extraCountRange = 30,
