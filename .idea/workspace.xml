@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3aa0fb6e-158d-47ce-bdc5-1cd1c6eeef8a" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/RequestFilterParser.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/RequestFilterParser.php" afterPath="$PROJECT_DIR$/RequestFilterParser.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="reporting_prototype.iws" />
@@ -38,7 +38,7 @@
       <file leaf-file-name="FetchNode.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/FetchNode.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="448" column="10" selection-start="17473" selection-end="17473" vertical-scroll-proportion="-24.875" vertical-offset="6048" max-vertical-offset="6765">
+            <state line="448" column="10" selection-start="17473" selection-end="17473" vertical-scroll-proportion="0.0" vertical-offset="6720" max-vertical-offset="6840">
               <folding />
             </state>
           </provider>
@@ -47,7 +47,7 @@
       <file leaf-file-name="EntityMetadata.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/EntityMetadata.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="66" column="5" selection-start="1378" selection-end="1378" vertical-scroll-proportion="-41.25" vertical-offset="0" max-vertical-offset="2355">
+            <state line="66" column="5" selection-start="1378" selection-end="1378" vertical-scroll-proportion="0.0" vertical-offset="990" max-vertical-offset="2355">
               <folding />
             </state>
           </provider>
@@ -56,7 +56,7 @@
       <file leaf-file-name="MetadataManager.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/MetadataManager.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="10" column="0" selection-start="197" selection-end="197" vertical-scroll-proportion="-6.25" vertical-offset="0" max-vertical-offset="2205">
+            <state line="10" column="0" selection-start="197" selection-end="197" vertical-scroll-proportion="0.0" vertical-offset="150" max-vertical-offset="2205">
               <folding />
             </state>
           </provider>
@@ -65,7 +65,7 @@
       <file leaf-file-name="RequestFilterParser.php" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/RequestFilterParser.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="37" column="0" selection-start="1044" selection-end="1044" vertical-scroll-proportion="0.35135135" vertical-offset="220" max-vertical-offset="5010">
+            <state line="29" column="88" selection-start="909" selection-end="909" vertical-scroll-proportion="0.4568528" vertical-offset="0" max-vertical-offset="8865">
               <folding />
             </state>
           </provider>
@@ -109,9 +109,8 @@
   </component>
   <component name="PhpWorkspaceProjectConfiguration" backward_compatibility_performed="true" />
   <component name="ProjectFrameBounds">
-    <option name="y" value="22" />
     <option name="width" value="1440" />
-    <option name="height" value="874" />
+    <option name="height" value="900" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -166,6 +165,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="recentsLimit" value="5" />
     <property name="restartRequiresConfirmation" value="true" />
+    <property name="FullScreen" value="true" />
   </component>
   <component name="RunManager" selected="PHP Web Application.mbp.tim.tinderfoundation.org">
     <configuration default="true" type="PHPUnitRunConfigurationType" factoryName="PHPUnit">
@@ -201,7 +201,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1440" height="874" extended-state="0" />
+    <frame x="0" y="0" width="1440" height="900" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -210,7 +210,7 @@
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.48819876" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4876905" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -261,10 +261,45 @@
           <option name="timeStamp" value="47" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="51" />
+      <option name="time" value="54" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/StorageManager.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="44" column="24" selection-start="1337" selection-end="1337" vertical-scroll-proportion="0.0" vertical-offset="660" max-vertical-offset="900">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/FetchNode.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="448" column="10" selection-start="17473" selection-end="17473" vertical-scroll-proportion="0.0" vertical-offset="6720" max-vertical-offset="6840">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/EntityMetadata.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="66" column="5" selection-start="1378" selection-end="1378" vertical-scroll-proportion="0.0" vertical-offset="990" max-vertical-offset="2355">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MetadataManager.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="0" selection-start="197" selection-end="197" vertical-scroll-proportion="0.0" vertical-offset="150" max-vertical-offset="2205">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/RequestFilterParser.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="37" column="0" selection-start="1044" selection-end="1044" vertical-scroll-proportion="0.0" vertical-offset="555" max-vertical-offset="5010">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/FetchCursor.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="46" column="0" selection-start="872" selection-end="872" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="7230">
@@ -283,16 +318,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/extras.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="329" column="0" selection-start="9559" selection-end="9559" vertical-scroll-proportion="0.0" vertical-offset="4935" max-vertical-offset="5025">
-          <folding />
-        </state>
+        <state line="329" column="0" selection-start="9559" selection-end="9559" vertical-scroll-proportion="0.0" vertical-offset="4935" max-vertical-offset="5025" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/run.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="0" selection-start="555" selection-end="555" vertical-scroll-proportion="0.0" vertical-offset="405" max-vertical-offset="525">
-          <folding />
-        </state>
+        <state line="27" column="0" selection-start="555" selection-end="555" vertical-scroll-proportion="0.0" vertical-offset="405" max-vertical-offset="525" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/StorageRequest.php">
@@ -355,16 +386,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/extras.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="329" column="0" selection-start="9559" selection-end="9559" vertical-scroll-proportion="0.0" vertical-offset="4935" max-vertical-offset="5025">
-          <folding />
-        </state>
+        <state line="329" column="0" selection-start="9559" selection-end="9559" vertical-scroll-proportion="0.0" vertical-offset="4935" max-vertical-offset="5025" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/run.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="0" selection-start="555" selection-end="555" vertical-scroll-proportion="0.0" vertical-offset="405" max-vertical-offset="525">
-          <folding />
-        </state>
+        <state line="27" column="0" selection-start="555" selection-end="555" vertical-scroll-proportion="0.0" vertical-offset="405" max-vertical-offset="525" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/FetchNode.php">
@@ -478,21 +505,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/run.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="0" selection-start="555" selection-end="555" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="495">
-          <folding />
-        </state>
+        <state line="27" column="0" selection-start="555" selection-end="555" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="495" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/extras.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4965">
-          <folding />
-        </state>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4965" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/EntityMetadata.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="66" column="5" selection-start="1378" selection-end="1378" vertical-scroll-proportion="-41.25" vertical-offset="0" max-vertical-offset="2355">
+        <state line="66" column="5" selection-start="1378" selection-end="1378" vertical-scroll-proportion="0.0" vertical-offset="990" max-vertical-offset="2355">
           <folding />
         </state>
       </provider>
@@ -508,7 +531,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/MetadataManager.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="0" selection-start="197" selection-end="197" vertical-scroll-proportion="-6.25" vertical-offset="0" max-vertical-offset="2205">
+        <state line="10" column="0" selection-start="197" selection-end="197" vertical-scroll-proportion="0.0" vertical-offset="150" max-vertical-offset="2205">
           <folding />
         </state>
       </provider>
@@ -522,14 +545,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/FetchNode.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="448" column="10" selection-start="17473" selection-end="17473" vertical-scroll-proportion="-24.875" vertical-offset="6048" max-vertical-offset="6765">
+        <state line="448" column="10" selection-start="17473" selection-end="17473" vertical-scroll-proportion="0.0" vertical-offset="6720" max-vertical-offset="6840">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/RequestFilterParser.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="37" column="0" selection-start="1044" selection-end="1044" vertical-scroll-proportion="0.35135135" vertical-offset="220" max-vertical-offset="5010">
+        <state line="29" column="88" selection-start="909" selection-end="909" vertical-scroll-proportion="0.4568528" vertical-offset="0" max-vertical-offset="8865">
           <folding />
         </state>
       </provider>
