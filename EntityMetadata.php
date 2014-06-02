@@ -99,6 +99,16 @@ class EntityMetadata {
     }
 
 
+    public function getDefaultResourceName()
+    {
+        // All entities should have a default resource name
+        if (!isset($this->data['defaultResourceName'])) {
+            throw new Exception('No defaultResourceName defined in: [' . serialize($this) . ']');
+        }
+        return $this->data['defaultResourceName'];
+    }
+
+
     public function setData(array $data)
     {
         // Current format metadata is stored in 'description' property

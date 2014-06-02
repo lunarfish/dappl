@@ -6,6 +6,8 @@
  * Time: 22:27
  */
 
+
+/*
 $f = array();
 
 $f[] = <<< 'HEREDOC'
@@ -24,7 +26,9 @@ $f[] = <<< 'HEREDOC'
 (LocationID ge 1234) and (endswith(PostCode,'XT') eq true)
 HEREDOC;
 
-
+$f[] = <<< 'HEREDOC'
+(((((((((LocationID eq 1234) and (Address1 eq 'XT')) and (substringof('single'' double%22 percent%25 hello',Address1) eq true)) and (startswith(Address1,'hello!!') eq true)) and (endswith(Address1,'hello!!') eq true)) and (Address1 gt 'hello!!')) and (Address1 ge 'hello!!')) and (Address1 lt 'hello!!')) and (Address1 le 'hello!!')) and (LookupCountyID ne 5)
+HEREDOC;
 
 
 echo 'TEST (property equals string value) predicate - will fail at the moment' . PHP_EOL;
@@ -38,14 +42,14 @@ foreach($f as $input) {
     $tokens = $scanner->tokenize($input);
 
     // Output
-    /*echo $input . PHP_EOL;
-    $line = 0;
-    foreach($tokens as $token) {
-        echo "($line) $token";
-        $line++;
-    }
-    echo PHP_EOL . PHP_EOL;
-*/
+//    echo $input . PHP_EOL;
+//    $line = 0;
+//    foreach($tokens as $token) {
+//        echo "($line) $token";
+//        $line++;
+//    }
+//    echo PHP_EOL . PHP_EOL;
+
 
     // Create predicate list
     $predicates = $parser->getPredicates($tokens);
@@ -57,7 +61,7 @@ foreach($f as $input) {
     }
     echo PHP_EOL . PHP_EOL;
 }
-
+*/
 
 
 class RequestFilterPredicate

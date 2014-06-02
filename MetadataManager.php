@@ -9,6 +9,10 @@ class MetadataManager {
     private $storageManager;
 
 
+    const CACHE_PREFIX_ENTITY = 'Entity.';
+    const CACHE_PREFIX_RESOURCE = 'Resource.';
+
+
     public function __construct(array $params, StorageManager $storageManager)
     {
         // Parameters
@@ -32,7 +36,7 @@ class MetadataManager {
     public function metadataForEntity($entityName)
     {
         // Try cache
-        $cacheName = 'Entity.' . $entityName;
+        $cacheName = self::CACHE_PREFIX_ENTITY . $entityName;
         if (!array_key_exists($cacheName, $this->cache)) {
             // Cache miss. Fetch from store
             $request = $this->getMetadataStorageRequest();
@@ -46,7 +50,7 @@ class MetadataManager {
             $entityMetadata = new EntityMetadata();
             $entityMetadata->setData($metadata);
 
-            $this->cache[$cacheName] = $entityMetadata;
+            $this->addToCache($entityMetadata);
         }
 
         return $this->cache[$cacheName];
@@ -55,11 +59,33 @@ class MetadataManager {
 
     public function metadataForDefaultResourceName($defaultResourceName)
     {
-        // Get this and above to share code in a private method
+        // Try cache
+        $cacheName = self::CACHE_PREFIX_RESOURCE . $defaultResourceName;
+        if (!array_key_exists($cacheName, $this->cache)) {
+            // Cache miss. Fetch from store
+            $request = $this->getMetadataStorageRequest();
+            $request->setFilter(array('description.defaultResourceName' => $defaultResourceName));
+            $metadata = $this->storageManager->fetchOne($request);
+            if (!$metadata) {
+                throw new Exception('Could not locate metadata with default resource name: [' . $defaultResourceName . ']');
+            }
 
-        // filter on name
+            // Populate new EntityMetadata
+            $entityMetadata = new EntityMetadata();
+            $entityMetadata->setData($metadata);
 
-        throw new Exception('Implement me');
+            $this->addToCache($entityMetadata);
+        }
+
+        return $this->cache[$cacheName];
+    }
+
+
+    private function addToCache(EntityMetadata $metadata)
+    {
+        // Add to both entity and resource cache keys
+        $this->cache[self::CACHE_PREFIX_ENTITY . $metadata->getEntityName()] = $metadata;
+        $this->cache[self::CACHE_PREFIX_RESOURCE . $metadata->getDefaultResourceName()] = $metadata;
     }
 
 
