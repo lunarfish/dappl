@@ -61,7 +61,7 @@ $countyRequest->setSelect(array('LookupCountyID', 'Description'));
 // FetchNodeResultProjectionProcessor | FetchNodeResultExpandProcessor
 */
 $filter = <<< 'HEREDOC'
-(LookupCountys%2FLookupNations%2FNation eq 'Wales')
+((LocationID gt 6123) and (LookupCountys%2FLookupNations%2FNation eq 'Wales')
 HEREDOC;
 
 $defaultResourceName = 'Locations';
@@ -80,6 +80,7 @@ class FetchNodeGraph
     private $batchSize;
 
     private $rootNode;
+    private $nodeCache;
 
 
     public function __construct(MetadataManager $metadataManager, StorageManager $storageManager, FetchNodeResultProcessorInterface $resultProcessor, $batchSize)
@@ -88,6 +89,7 @@ class FetchNodeGraph
         $this->storageManager = $storageManager;
         $this->resultProcessor = $resultProcessor;
         $this->batchSize = $batchSize;
+        $this->nodeCache = array();
     }
 
 
@@ -110,14 +112,53 @@ class FetchNodeGraph
         $this->rootNode = $this->createFetchNode($rootRequest);
 
         // Iterate predicates
+        foreach($predicates as $predicate) {
+            // Split property path
+            $path = $predicate->getProperty();
+            $segments = explode('/', $path);
+var_dump($segments);
 
-        // Expand property path
+            // Property is the last one
+            $propertyIndex = count($segments) - 1;
 
-        // Get node for path
+            // Traverse navigation properties
+            $currentNode = $this->rootNode;
+            $nodePath = $defaultResourceName;
+            for($i = 0; $i < $propertyIndex; $i++) {
+                // Do we have a node for this path
+                $nodePath .= ('/' . $segments[$i]);
+                $nextNode = $this->getNodeForPath($nodePath);
+                if (!$nextNode) {
+                    // We don't have one - create it
+                    // Load navigation property
+                    $metadata = $currentNode->getMetadata();
+                    $navigationProperty = $this->metadataManager->getNavigationProperty($metadata->getEntityName(), $segments[$i]);
 
-        // Add predicate
+                    // Get target entity
+                    $targetEntity = $navigationProperty->getEntityTypeName(true);
 
+                    // Get target metadata, so we can obtain the default resource name
+                    $targetMetadata = $this->metadataManager->metadataForEntity($targetEntity);
+                    $targetDefaultResourceName = $targetMetadata->getDefaultResourceName();
 
+                    // Create the node
+                    $nextNode = $this->createNodeForPath($nodePath, $targetDefaultResourceName);
+
+                    // Add the node to its parent
+                    $currentNode->addChild($nextNode, $segments[$i]);
+                }
+
+                // Update current node
+                $currentNode = $nextNode;
+            }
+
+            // Now we have the node for this predicate loaded. Get the request
+            $request = $currentNode->getRequest();
+
+            // Add predicate
+            $request->addPredicate($predicate, $segments[$propertyIndex]);
+        }
+        return $this->rootNode;
     }
 
 

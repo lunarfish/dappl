@@ -79,6 +79,24 @@ class RequestFilterPredicate
     }
 
 
+    public function getProperty()
+    {
+        return $this->property;
+    }
+
+
+    public function getOperator()
+    {
+        return $this->operator;
+    }
+
+
+    public function getValue()
+    {
+        return $this->value;
+    }
+
+
     public function __toString()
     {
         return sprintf('(%s %s %s)', $this->property, $this->operator, $this->value);

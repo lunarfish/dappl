@@ -114,6 +114,15 @@ class FetchNode
 
 
     /**
+     * Returns the entity metadata for this node
+     */
+    public function getMetadata()
+    {
+        return $this->baseRequest->getMetadata();
+    }
+
+
+    /**
      * Clears any current cursor. This resets the state of this node to UNREADY
      * Also purges any child nodes belonging to this node.
      */
