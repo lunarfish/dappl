@@ -123,6 +123,17 @@ class FetchNode
 
 
     /**
+     * Returns the base request for this node. This is the base request that is used as a prototype to build the actual request
+     * that is performed for this node, which may include extra filters to match parent results.
+     * @return StorageRequest
+     */
+    public function getBaseRequest()
+    {
+        return $this->baseRequest;
+    }
+
+
+    /**
      * Clears any current cursor. This resets the state of this node to UNREADY
      * Also purges any child nodes belonging to this node.
      */
@@ -455,6 +466,6 @@ class FetchNode
      */
     public function log($msg)
     {
-        //echo $this->getName() . ': ' . $msg . PHP_EOL;
+        echo $this->getName() . ': ' . $msg . PHP_EOL;
     }
 } 

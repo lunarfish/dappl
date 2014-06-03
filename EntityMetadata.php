@@ -75,6 +75,11 @@ class EntityMetadata {
 
     private $containerName;
     private $data;
+    private $dataPropertiesCache;
+
+    const DATATYPE_INT32 = 'Int32';
+    const DATATYPE_STRING = 'String';
+    const DATATYPE_DATETIME = 'DateTime';
 
 
     public function setContainerName($name)
@@ -116,6 +121,42 @@ class EntityMetadata {
             throw new Exception('Metadata description missing');
         }
         $this->data = $data['description'];
+    }
+
+
+    /**
+     * Returns the types
+     */
+    public function getPropertyDataType($propertyName)
+    {
+        $fields = $this->getPropertyFields($propertyName);
+        if (!isset($fields['dataType'])) {
+            throw new Exception(sprintf('Could not find data type for property [%s] on entity: [%s]', $propertyName, $this->getEntityName()));
+        }
+        return $fields['dataType'];
+    }
+
+
+    public function getPropertyFields($propertyName)
+    {
+        if (!$this->dataPropertiesCache) {
+            // Build cache
+            if (is_array($this->data) &&
+                array_key_exists('dataProperties', $this->data) &&
+                is_array($this->data['dataProperties'])) {
+                $this->dataPropertiesCache = array();
+                foreach($this->data['dataProperties'] as $prop) {
+                    $this->dataPropertiesCache[$prop['name']] = $prop;
+                }
+            } else {
+                throw new Exception(sprintf('Could not find property [%s] for entity: [%s] - data properties not defined in metadata', $propertyName, $this->getEntityName()));
+            }
+        }
+
+        if (!array_key_exists($propertyName, $this->dataPropertiesCache)) {
+            throw new Exception(sprintf('Could not find property [%s] for entity: [%s]', $propertyName, $this->getEntityName()));
+        }
+        return $this->dataPropertiesCache[$propertyName];
     }
 
 

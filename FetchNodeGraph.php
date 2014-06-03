@@ -34,41 +34,50 @@ $scanner = new RequestFilterTokenizer();
 $parser = new RequestFilterPredicateParser();
 
 
-/*
-// Graph requests
-$rootRequest = new StorageRequest('Locations', $metadataManager->metadataForEntity('Location'));
-$countyRequest = new StorageRequest('LookupCountys', $metadataManager->metadataForEntity('LookupCounty'));
-$nationRequest = new StorageRequest('LookupNations', $metadataManager->metadataForEntity('LookupNation'));
-$extraRequest = new StorageRequest('Extras', $metadataManager->metadataForEntity('Extra'));
-
-// Limit nation search to 5 of each nation
-$fewNations = array(1, 2, 3, 4, 5, 11938, 12436, 12437, 12439, 12441, 12447, 12448, 12449, 12466, 12531, 13083, 13099, 13141, 13216, 13345);
-$rootRequest->addFilter(array('LocationID' => array('$in' => $fewNations)));
-$rootRequest->setSelect(array('LocationID', 'Address1', 'PostCode', 'LookupCountyID'));
-
-// Add what we are looking for
-$nationRequest->addFilter(array('Nation' => $targetNation));
-//$nationRequest->setSelect(array('LocationID', 'Address1', 'PostCode'));
-
-$extraRequest->addFilter(array('ExtraValue' => array('$gt' => 25)));
-$extraRequest->setSelect(array('ExtraValue'));
-
-$countyRequest->addFilter(array('LookupNationID' => 3));
-$countyRequest->setSelect(array('LookupCountyID', 'Description'));
+$startTime = microtime(true);
+$batchSize = 10000;
 
 
-// How do we want our results cooked? Either expanded or projection (flattened)
-// FetchNodeResultProjectionProcessor | FetchNodeResultExpandProcessor
-*/
 $filter = <<< 'HEREDOC'
-((LocationID gt 6123) and (LookupCountys%2FLookupNations%2FNation eq 'Wales')
+((LocationID gt 13000) and (LookupCountys%2FLookupNations%2FNation eq 'Wales')
 HEREDOC;
 
 $defaultResourceName = 'Locations';
 
-$graph = new FetchNodeGraph($metadataManager, $storageManager, $resultProcessor, 100);
+$graph = new FetchNodeGraph($metadataManager, $storageManager, $resultProcessor, $batchSize);
 $predicates = $graph->extractPredicates($scanner, $parser, $filter);
-$rootNode = $graph->buildGraph($defaultResourceName, $predicates);
+$rootNode = $graph->buildGraph($defaultResourceName, $predicates, array('LocationID', 'Address1', 'PostCode', 'LookupCountyID', 'LookupCountys/Description'));
+
+$request = $rootNode->getBaseRequest();
+//$request->setSelect(array('LocationID', 'Address1', 'PostCode', 'LookupCountyID'));
+
+$total = 0;
+$result = null;
+$input = new FetchResultCollection();
+$rootNode->prepare($input);
+do {
+    $result = $rootNode->fetch();
+    if (is_object($result)) {
+        echo 'We have a result set: ' . count($result) . PHP_EOL;
+        foreach($result as $row) {
+            echo json_encode($row) . PHP_EOL;
+        }
+//var_dump($result[]);
+        $total += count($result);
+    }
+} while(false !== $result);
+
+
+
+// Profile
+$endTime = microtime(true);
+echo 'Batch size: ' . $batchSize;
+echo ' Target: ' . $defaultResourceName;
+echo ' Time: ' . round($endTime - $startTime, 2) . " Sec.";
+echo ' Total found: ' . $total;
+echo " Memory: ".(memory_get_peak_usage(true)/1024/1024)." MB";
+echo PHP_EOL;
+
 
 
 // Builds a graph of fetch nodes from a filter
@@ -93,6 +102,13 @@ class FetchNodeGraph
     }
 
 
+    /**
+     * Returns array of RequestFilterPredicate instances for the given Breeze/OData input string
+     * @param RequestFilterTokenizer $scanner
+     * @param RequestFilterPredicateParser $parser
+     * @param $input
+     * @return array
+     */
     public function extractPredicates(RequestFilterTokenizer $scanner, RequestFilterPredicateParser $parser, $input)
     {
         // Create tokens
@@ -105,72 +121,126 @@ class FetchNodeGraph
     }
 
 
-    public function buildGraph($defaultResourceName, array $predicates)
+    /**
+     *
+     * @param $defaultResourceName root collection to build graph from
+     * @param array $predicates RequestFilterPredicate instances
+     * @param array $select Property paths to include in result set
+     * @return FetchNode
+     */
+    public function buildGraph($defaultResourceName, array $predicates, array $select)
     {
         // Construct root node
-        $rootRequest = new StorageRequest($defaultResourceName, $this->metadataManager->metadataForDefaultResourceName($defaultResourceName));
-        $this->rootNode = $this->createFetchNode($rootRequest);
+        $this->rootNode = $this->createNodeForPath($defaultResourceName, $defaultResourceName);
 
         // Iterate predicates
         foreach($predicates as $predicate) {
             // Split property path
             $path = $predicate->getProperty();
-            $segments = explode('/', $path);
-var_dump($segments);
+            $this->processNavigationPathNode($path, $this->rootNode, $defaultResourceName, function($node) use($predicate) {
+                // Now we have the node for this predicate loaded. Get the request
+                $request = $node->getBaseRequest();
 
-            // Property is the last one
-            $propertyIndex = count($segments) - 1;
-
-            // Traverse navigation properties
-            $currentNode = $this->rootNode;
-            $nodePath = $defaultResourceName;
-            for($i = 0; $i < $propertyIndex; $i++) {
-                // Do we have a node for this path
-                $nodePath .= ('/' . $segments[$i]);
-                $nextNode = $this->getNodeForPath($nodePath);
-                if (!$nextNode) {
-                    // We don't have one - create it
-                    // Load navigation property
-                    $metadata = $currentNode->getMetadata();
-                    $navigationProperty = $this->metadataManager->getNavigationProperty($metadata->getEntityName(), $segments[$i]);
-
-                    // Get target entity
-                    $targetEntity = $navigationProperty->getEntityTypeName(true);
-
-                    // Get target metadata, so we can obtain the default resource name
-                    $targetMetadata = $this->metadataManager->metadataForEntity($targetEntity);
-                    $targetDefaultResourceName = $targetMetadata->getDefaultResourceName();
-
-                    // Create the node
-                    $nextNode = $this->createNodeForPath($nodePath, $targetDefaultResourceName);
-
-                    // Add the node to its parent
-                    $currentNode->addChild($nextNode, $segments[$i]);
-                }
-
-                // Update current node
-                $currentNode = $nextNode;
-            }
-
-            // Now we have the node for this predicate loaded. Get the request
-            $request = $currentNode->getRequest();
-
-            // Add predicate
-            $request->addPredicate($predicate, $segments[$propertyIndex]);
+                // Add predicate
+                $request->addPredicate($predicate);
+            });
         }
+
+        // Iterate select
+        foreach($select as $selectPath) {
+            $this->processNavigationPathNode($selectPath, $this->rootNode, $defaultResourceName, function($node, $propertyName) {
+                // Now we have the node for this predicate loaded. Get the request
+                $request = $node->getBaseRequest();
+
+                // Add predicate
+                $request->addSelect($propertyName);
+            });
+        }
+
         return $this->rootNode;
     }
 
 
-
-    public function getFetchNode(array $path, $createIfMissing = true)
+    /**
+     * Walks all the steps in a property path (eg Locations/LookupCountys/LookupNations/Nation), creating FetchNode instances
+     * as it goes if they are not already in the graph. When the node is found (in this case the node for LookupNations)
+     * the $process callback is invoked with arguments ($node, $propertyName) where $propertyName is the last property in $path
+     * (in this case Nations)
+     * @param $path
+     * @param $rootNode
+     * @param $defaultResourceName
+     * @param $process
+     */
+    private function processNavigationPathNode($path, FetchNode $rootNode, $defaultResourceName, $process)
     {
+        // Split path into segments
+        $segments = explode('/', $path);
 
+        // Property is the last one
+        $propertyIndex = count($segments) - 1;
+
+        // Traverse navigation properties to get to the entity to receive this predicate
+        $currentNode = $rootNode;
+        $nodePath = $defaultResourceName;
+        for($i = 0; $i < $propertyIndex; $i++) {
+            // Do we have a node for this path
+            $nodePath .= ('/' . $segments[$i]);
+            $nextNode = $this->getNodeForPath($nodePath);
+            if (!$nextNode) {
+                // We don't have one - create it
+                // Load navigation property
+                $metadata = $currentNode->getMetadata();
+                $navigationProperty = $this->metadataManager->getNavigationProperty($metadata->getEntityName(), $segments[$i]);
+
+                // Get target entity
+                $targetEntity = $navigationProperty->getEntityTypeName(true);
+
+                // Get target metadata, so we can obtain the default resource name
+                $targetMetadata = $this->metadataManager->metadataForEntity($targetEntity);
+                $targetDefaultResourceName = $targetMetadata->getDefaultResourceName();
+
+                // Create the node
+                $nextNode = $this->createNodeForPath($nodePath, $targetDefaultResourceName);
+
+                // Add the node to its parent
+                $currentNode->addChild($nextNode, $segments[$i]);
+            }
+
+            // Update current node
+            $currentNode = $nextNode;
+        }
+
+        $process($currentNode, $segments[$propertyIndex]);
     }
 
 
-    private function createFetchNode(StorageRequest $request)
+    /**
+     * Returns a FetchNode instance from the cache for given path, eg Locations/LookupCountys
+     * or false
+     * @param $path
+     * @return false | FetchNode
+     */
+    public function getNodeForPath($path)
     {
-        return new FetchNode($this->metadataManager, $request, $this->storageManager, $this->batchSize, $this->resultProcessor);
+        return array_key_exists($path, $this->nodeCache) ? $this->nodeCache[$path] : false;
+    }
+
+
+    /**
+     * Creates a new FetchNode instance for $defaultResourceName collection and stores in the cache with $nodePath as the key.
+     * @param $nodePath
+     * @param $defaultResourceName
+     * @return FetchNode
+     * @throws Exception
+     */
+    private function createNodeForPath($nodePath, $defaultResourceName)
+    {
+        if (array_key_exists($nodePath, $this->nodeCache)) {
+            throw new Exception(sprintf('Cannot create node at path: [%s] for resource: [%s] - already exists in cache', $nodePath, $defaultResourceName));
+        }
+        $request = new StorageRequest($defaultResourceName, $this->metadataManager->metadataForDefaultResourceName($defaultResourceName));
+        $node = new FetchNode($this->metadataManager, $request, $this->storageManager, $this->batchSize, $this->resultProcessor);
+        $this->nodeCache[$nodePath] = $node;
+        return $node;
     }
 } 

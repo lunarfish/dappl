@@ -79,9 +79,19 @@ class RequestFilterPredicate
     }
 
 
-    public function getProperty()
+    /**
+     * Returns the property path this predicate should operate on, eg Locations/LookupCountrys/Description
+     * @param bool $filterPath if true the path is remove to just include the property name
+     * @return mixed
+     */
+    public function getProperty($filterPath = false)
     {
-        return $this->property;
+        if ($filterPath) {
+            $segments = explode('/', $this->property);
+            return end($segments);
+        } else {
+            return $this->property;
+        }
     }
 
 
