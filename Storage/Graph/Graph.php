@@ -6,82 +6,18 @@
  * Time: 14:30
  */
 
+namespace Dappl\Storage\Graph;
 
 
-
-
-
-require_once('StorageRequest.php');
-require_once('FetchCursor.php');
-require_once('StorageManager.php');
-require_once('EntityMetadata.php');
-require_once('MetadataManager.php');
-require_once('FetchNode.php');
-require_once('FetchNodeResultProcessor.php');
-require_once('RequestFilterParser.php');
-
-
-// Setup the managers
-$storageManager = new StorageManager(array());
-$metadataManager = new MetadataManager(array(
-    'metadata_container_name' => 'mongo.metadata',
-    'metadata_default_resource_name' => 'Entities'
-), $storageManager);
-$resultProcessor = new FetchNodeResultProjectionProcessor();
-
-// Setup filter parsing
-$scanner = new RequestFilterTokenizer();
-$parser = new RequestFilterPredicateParser();
-
-
-$startTime = microtime(true);
-$batchSize = 10000;
-
-
-$filter = <<< 'HEREDOC'
-((LocationID gt 13000) and (LookupCountys%2FLookupNations%2FNation eq 'Wales')
-HEREDOC;
-
-$defaultResourceName = 'Locations';
-
-$graph = new FetchNodeGraph($metadataManager, $storageManager, $resultProcessor, $batchSize);
-$predicates = $graph->extractPredicates($scanner, $parser, $filter);
-$rootNode = $graph->buildGraph($defaultResourceName, $predicates, array('LocationID', 'Address1', 'PostCode', 'LookupCountyID', 'LookupCountys/Description'));
-
-$request = $rootNode->getBaseRequest();
-//$request->setSelect(array('LocationID', 'Address1', 'PostCode', 'LookupCountyID'));
-
-$total = 0;
-$result = null;
-$input = new FetchResultCollection();
-$rootNode->prepare($input);
-do {
-    $result = $rootNode->fetch();
-    if (is_object($result)) {
-        echo 'We have a result set: ' . count($result) . PHP_EOL;
-        foreach($result as $row) {
-            echo json_encode($row) . PHP_EOL;
-        }
-//var_dump($result[]);
-        $total += count($result);
-    }
-} while(false !== $result);
-
-
-
-// Profile
-$endTime = microtime(true);
-echo 'Batch size: ' . $batchSize;
-echo ' Target: ' . $defaultResourceName;
-echo ' Time: ' . round($endTime - $startTime, 2) . " Sec.";
-echo ' Total found: ' . $total;
-echo " Memory: ".(memory_get_peak_usage(true)/1024/1024)." MB";
-echo PHP_EOL;
-
+use \Dappl\Metadata\Manager as MetadataManager;
+use \Dappl\Storage\Manager as StorageManager;
+use \Dappl\Fetch\FilterTokenizer;
+use \Dappl\Fetch\PredicateParser;
+use \Dappl\Fetch\Request;
 
 
 // Builds a graph of fetch nodes from a filter
-class FetchNodeGraph
+class Graph
 {
     private $metadataManager;
     private $storageManager;
@@ -92,7 +28,7 @@ class FetchNodeGraph
     private $nodeCache;
 
 
-    public function __construct(MetadataManager $metadataManager, StorageManager $storageManager, FetchNodeResultProcessorInterface $resultProcessor, $batchSize)
+    public function __construct(MetadataManager $metadataManager, StorageManager $storageManager, ResultProcessorInterface $resultProcessor, $batchSize)
     {
         $this->metadataManager = $metadataManager;
         $this->storageManager = $storageManager;
@@ -109,7 +45,7 @@ class FetchNodeGraph
      * @param $input
      * @return array
      */
-    public function extractPredicates(RequestFilterTokenizer $scanner, RequestFilterPredicateParser $parser, $input)
+    public function extractPredicates(FilterTokenizer $scanner, PredicateParser $parser, $input)
     {
         // Create tokens
         $tokens = $scanner->tokenize($input);
@@ -171,7 +107,7 @@ class FetchNodeGraph
      * @param $defaultResourceName
      * @param $process
      */
-    private function processNavigationPathNode($path, FetchNode $rootNode, $defaultResourceName, $process)
+    private function processNavigationPathNode($path, Node $rootNode, $defaultResourceName, $process)
     {
         // Split path into segments
         $segments = explode('/', $path);
@@ -236,10 +172,10 @@ class FetchNodeGraph
     private function createNodeForPath($nodePath, $defaultResourceName)
     {
         if (array_key_exists($nodePath, $this->nodeCache)) {
-            throw new Exception(sprintf('Cannot create node at path: [%s] for resource: [%s] - already exists in cache', $nodePath, $defaultResourceName));
+            throw new \Exception(sprintf('Cannot create node at path: [%s] for resource: [%s] - already exists in cache', $nodePath, $defaultResourceName));
         }
-        $request = new StorageRequest($defaultResourceName, $this->metadataManager->metadataForDefaultResourceName($defaultResourceName));
-        $node = new FetchNode($this->metadataManager, $request, $this->storageManager, $this->batchSize, $this->resultProcessor);
+        $request = new Request($defaultResourceName, $this->metadataManager->metadataForDefaultResourceName($defaultResourceName));
+        $node = new Node($this->metadataManager, $request, $this->storageManager, $this->batchSize, $this->resultProcessor);
         $this->nodeCache[$nodePath] = $node;
         return $node;
     }

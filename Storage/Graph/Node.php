@@ -6,7 +6,15 @@
  * Time: 14:34
  */
 
-class FetchNode
+namespace Dappl\Storage\Graph;
+
+use \Dappl\Metadata\Manager as MetadataManager;
+use \Dappl\Storage\Manager as StorageManager;
+use \Dappl\Fetch\Request;
+use \Dappl\Metadata\NavigationProperty;
+
+
+class Node
 {
     private $metadataManager;
     private $baseRequest;
@@ -32,7 +40,7 @@ class FetchNode
     const COMPLETE = 2;
 
 
-    public function __construct(MetadataManager $metadataManager, StorageRequest $baseRequest, StorageManager $storageManager, $batchSize, FetchNodeResultProcessorInterface $resultProcessor)
+    public function __construct(MetadataManager $metadataManager, Request $baseRequest, StorageManager $storageManager, $batchSize, ResultProcessorInterface $resultProcessor)
     {
         $this->metadataManager = $metadataManager;
         $this->baseRequest = $baseRequest;
@@ -48,7 +56,7 @@ class FetchNode
     }
 
 
-    public function addChild(FetchNode $node, $navigationPropertyName)
+    public function addChild(Node $node, $navigationPropertyName)
     {
         // Add new node to child list
         $this->children[] = $node;
@@ -179,13 +187,13 @@ class FetchNode
     /**
      * Lazy loads the fetch result collection for this node.
      * @param bool $purge - if true removes all results from the collection.
-     * @return FetchResultCollection
+     * @return ResultCollection
      */
     public function getFetchResultCollection($purge = false)
     {
         if (!$this->fetchResultCollection) {
             // Create a new fetch result collection
-            $this->fetchResultCollection = new FetchResultCollection($this);
+            $this->fetchResultCollection = new ResultCollection($this);
 
             // Set primary key from our base request metadata
             $pk = $this->baseRequest->getMetadata()->getKey();
@@ -207,15 +215,15 @@ class FetchNode
     }
 
 
-    public function prepare(FetchResultCollection $inputResultCollection)
+    public function prepare(ResultCollection $inputResultCollection)
     {
         // We should not be called if we already have a cursor that is in flight
         if (self::UNREADY !== $this->getState()) {
-            throw new Exception($this->getName() . ' node error - prepare called with existing active batch cursor');
+            throw new \Exception($this->getName() . ' node error - prepare called with existing active batch cursor');
         }
 
         // Create a new batch request, from the original details provided when the node was created
-        $request = new StorageRequest($this->baseRequest->getDefaultResourceName(), $this->baseRequest->getMetadata());
+        $request = new Request($this->baseRequest->getDefaultResourceName(), $this->baseRequest->getMetadata());
         $request->setFilter($this->baseRequest->getFilter());
 
         // Add any extra filter from the source data - eg extract any relationship keys to filter by
@@ -259,7 +267,7 @@ class FetchNode
     {
         // Sanity check. We must always have a cursor defined
         if (!$this->batchFetchCursor) {
-            throw new Exception($this->getName() . ' node error - fetch called us when we had no cursor defined');
+            throw new \Exception($this->getName() . ' node error - fetch called us when we had no cursor defined');
         }
 
         // Fetch process depends on if we are a leaf or parent node
@@ -301,9 +309,9 @@ class FetchNode
      * related to these input results, using the navigation property details to specify the key.
      *
      * @param StorageRequest $request - The current request to ammend
-     * @param FetchResultCollection $inputResultCollection - The result set to extract filter from
+     * @param ResultCollection $inputResultCollection - The result set to extract filter from
      */
-    private function addFilterFromSourceData(StorageRequest $request, FetchResultCollection $inputResultCollection)
+    private function addFilterFromSourceData(Request $request, ResultCollection $inputResultCollection)
     {
         if ($this->navigationProperty) {
             $nodeKey = $this->navigationProperty->getRelatedEntityKey();
@@ -431,19 +439,19 @@ class FetchNode
      * base that do not have related entities.
      * @param $baseCollection
      * @param $filterCollection
-     * @return FetchResultCollection
+     * @return ResultCollection
      */
-    public function newFetchResultCollectionFilteredByChildResults($baseCollection, $filterCollection)
+    public function newFetchResultCollectionFilteredByChildResults(ResultCollection $baseCollection, ResultCollection $filterCollection)
     {
         // Create a new result set to return.
-        $returnResultCollection = new FetchResultCollection($this);
+        $returnResultCollection = new ResultCollection($this);
 
         // Define keys to match original node result collection
         $returnResultCollection->setPrimaryKeyName($baseCollection->getPrimaryKeyName());
         $returnResultCollection->addIndexNames($baseCollection->getIndexNames());
 
         // Get the navigation property between the filter collection and the base collection
-        $navigationProperty = $filterCollection->getFetchNode()->getNavigationProperty();
+        $navigationProperty = $filterCollection->getNode()->getNavigationProperty();
         $nodeKey = $navigationProperty->getRelatedEntityKey();
         $childKey = $navigationProperty->getEntityKey();
 

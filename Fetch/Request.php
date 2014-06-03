@@ -6,7 +6,13 @@
  * Time: 16:21
  */
 
-class StorageRequest
+namespace Dappl\Fetch;
+
+use Dappl\Metadata\Entity;
+use Dappl\Fetch\Predicate;
+
+
+class Request
 {
     private $defaultResourceName;
     private $filter;
@@ -14,7 +20,7 @@ class StorageRequest
     private $select;
 
 
-    public function __construct($defaultResourceName, EntityMetadata $metadata)
+    public function __construct($defaultResourceName, Entity $metadata)
     {
         $this->defaultResourceName = $defaultResourceName;
         $this->metadata = $metadata;
@@ -48,7 +54,7 @@ class StorageRequest
     }
 
 
-    public function addPredicate(RequestFilterPredicate $predicate)
+    public function addPredicate(Predicate $predicate)
     {
         // TEMP HACK!!!
         // Turn this predicate into a mongo filter
@@ -71,20 +77,20 @@ class StorageRequest
         // Clean value according to metadata data type
         $dataType = $this->metadata->getPropertyDataType($property);
         switch($dataType) {
-            case EntityMetadata::DATATYPE_INT32:
+            case Entity::DATATYPE_INT32:
                 $value = (int)$value;
                 break;
 
-            case EntityMetadata::DATATYPE_STRING:
+            case Entity::DATATYPE_STRING:
                 $value = (string)$value;
                 break;
 
-            case EntityMetadata::DATATYPE_DATETIME:
-                $value = new MongoDate(strtotime($value));
+            case Entity::DATATYPE_DATETIME:
+                $value = new \MongoDate(strtotime($value));
                 break;
 
             default:
-                throw new Exception(sprintf('Unknown data type: [%s] found on property: [%s] of resource: [%s]', $dataType, $property, $this->defaultResourceName));
+                throw new \Exception(sprintf('Unknown data type: [%s] found on property: [%s] of resource: [%s]', $dataType, $property, $this->defaultResourceName));
         }
 
 
@@ -97,7 +103,7 @@ echo sprintf('%s: Adding predicate: %s on path: %s', $this->defaultResourceName,
             case 'eq':
                 // WE CANNOT MERGE THIS WITH ANOTHER
                 if (array_key_exists($property, $this->filter)) {
-                    throw new Exception(sprintf('Cannot add equals predicate to property: [%s], a predicate already exists: [%s]', $property, json_encode($this->filter[$property])));
+                    throw new \Exception(sprintf('Cannot add equals predicate to property: [%s], a predicate already exists: [%s]', $property, json_encode($this->filter[$property])));
                 }
                 // Set direct value and hope we don't get another operator for this property
                 // - or maybe equality takes priority and others are ignored?
@@ -138,7 +144,7 @@ echo sprintf('%s: Adding predicate: %s on path: %s', $this->defaultResourceName,
                 break;
 
             default:
-                throw new Exception(sprintf('%s: unknown predicate operator: %s', __METHOD__, $predicate));
+                throw new \Exception(sprintf('%s: unknown predicate operator: %s', __METHOD__, $predicate));
         }
 
         if (!array_key_exists($property, $this->filter)) {
@@ -148,7 +154,7 @@ echo sprintf('%s: Adding predicate: %s on path: %s', $this->defaultResourceName,
         if (is_array($this->filter[$property])) {
             $this->filter[$property][$operator] = $value;
         } else {
-            throw new Exception(sprintf('Cannot add predicate: [%s], an equality value: [%s] exists already', $predicate, $this->filter[$property]));
+            throw new \Exception(sprintf('Cannot add predicate: [%s], an equality value: [%s] exists already', $predicate, $this->filter[$property]));
         }
     }
 

@@ -1,6 +1,12 @@
 <?php
 
-class MetadataManager {
+namespace Dappl\Metadata;
+
+use \Dappl\Storage\Manager as StorageManager;
+use \Dappl\Fetch\Request;
+
+
+class Manager {
 
     private $metadataContainerName;
     private $metadataDefaultResourceName;
@@ -17,10 +23,10 @@ class MetadataManager {
     {
         // Parameters
         if (!array_key_exists('metadata_container_name', $params)) {
-            throw new Exception('metadata_container_name missing');
+            throw new \Exception('metadata_container_name missing');
         }
         if (!array_key_exists('metadata_default_resource_name', $params)) {
-            throw new Exception('metadata_default_resource_name missing');
+            throw new \Exception('metadata_default_resource_name missing');
         }
         $this->metadataContainerName = $params['metadata_container_name'];
         $this->metadataDefaultResourceName = $params['metadata_default_resource_name'];
@@ -43,11 +49,11 @@ class MetadataManager {
             $request->setFilter(array('description.shortName' => $entityName));
             $metadata = $this->storageManager->fetchOne($request);
             if (!$metadata) {
-                throw new Exception('Could not locate metadata for entity: [' . $entityName . ']');
+                throw new \Exception('Could not locate metadata for entity: [' . $entityName . ']');
             }
 
             // Populate new EntityMetadata
-            $entityMetadata = new EntityMetadata();
+            $entityMetadata = new Entity();
             $entityMetadata->setData($metadata);
 
             $this->addToCache($entityMetadata);
@@ -67,11 +73,11 @@ class MetadataManager {
             $request->setFilter(array('description.defaultResourceName' => $defaultResourceName));
             $metadata = $this->storageManager->fetchOne($request);
             if (!$metadata) {
-                throw new Exception('Could not locate metadata with default resource name: [' . $defaultResourceName . ']');
+                throw new \Exception('Could not locate metadata with default resource name: [' . $defaultResourceName . ']');
             }
 
             // Populate new EntityMetadata
-            $entityMetadata = new EntityMetadata();
+            $entityMetadata = new Entity();
             $entityMetadata->setData($metadata);
 
             $this->addToCache($entityMetadata);
@@ -81,7 +87,7 @@ class MetadataManager {
     }
 
 
-    private function addToCache(EntityMetadata $metadata)
+    private function addToCache(Entity $metadata)
     {
         // Add to both entity and resource cache keys
         $this->cache[self::CACHE_PREFIX_ENTITY . $metadata->getEntityName()] = $metadata;
@@ -98,7 +104,6 @@ class MetadataManager {
 
         $entityKey = null;
         $relatedEntityKey = null;
-        $isScalar = false;
 
         // Get the entity metadata
         $entityMetadata = $this->metadataForEntity($entityName);
@@ -106,7 +111,7 @@ class MetadataManager {
         // Get the raw property data
         $entityRaw = $entityMetadata->getNavigationPropertyFields($navigationPropertyName);
         if (!$entityRaw) {
-            throw new Exception(sprintf('Navigation property: [%s] does not exist on entity: [%s]', $navigationPropertyName, $entityName));
+            throw new \Exception(sprintf('Navigation property: [%s] does not exist on entity: [%s]', $navigationPropertyName, $entityName));
         }
 
         $navigationProperty = new NavigationProperty($navigationPropertyName, $entityRaw);
@@ -115,7 +120,7 @@ class MetadataManager {
         if ($navigationProperty->isScalar()) {
             // Yes, it's a 1:1 relationship. We should have a foreignKey defined which maps to the primary key of the host entity.
             if (!array_key_exists('foreignKeyNames', $entityRaw) || !count($entityRaw['foreignKeyNames'])) {
-                throw new Exception(sprintf('Illegal navigation property definition [%s.%s]. A 1:1 property must have foreignKeyNames defined', $entityName, $navigationPropertyName));
+                throw new \Exception(sprintf('Illegal navigation property definition [%s.%s]. A 1:1 property must have foreignKeyNames defined', $entityName, $navigationPropertyName));
             }
 
             // Not handling compound keys yet!
@@ -127,13 +132,13 @@ class MetadataManager {
             $relatedEntityMetadata = $this->metadataForEntity($relatedEntityName);
             $relatedEntityKey = $relatedEntityMetadata->getKey();
             if (!$relatedEntityKey) {
-                throw new Exception(sprintf('Illegal navigation property definition [%s.%s]. A 1:1 navigation property needs a primary key defined on the related entity', $entityName, $navigationPropertyName));
+                throw new \Exception(sprintf('Illegal navigation property definition [%s.%s]. A 1:1 navigation property needs a primary key defined on the related entity', $entityName, $navigationPropertyName));
             }
         } else {
             // No, it's 1:many relationship. There are probably multiple ways to define this but at the moment we only accept
             // an invForeignKeys mapped to the primary key of the host entity.
             if (!array_key_exists('invForeignKeyNames', $entityRaw) || !count($entityRaw['invForeignKeyNames'])) {
-                throw new Exception(sprintf('Illegal navigation property definition [%s.%s]. A 1:1 property must have foreignKeyNames defined', $entityName, $navigationPropertyName));
+                throw new \Exception(sprintf('Illegal navigation property definition [%s.%s]. A 1:1 property must have foreignKeyNames defined', $entityName, $navigationPropertyName));
             }
 
             // Not handling compound keys yet!
@@ -142,7 +147,7 @@ class MetadataManager {
             // Get the primary key of this entity (not handling compound primary keys...)
             $entityKey = $entityMetadata->getKey();
             if (!$entityKey) {
-                throw new Exception(sprintf('Illegal navigation property definition [%s.%s]. A navigation property needs a primary key defined', $entityName, $navigationPropertyName));
+                throw new \Exception(sprintf('Illegal navigation property definition [%s.%s]. A navigation property needs a primary key defined', $entityName, $navigationPropertyName));
             }
         }
 
@@ -157,11 +162,11 @@ class MetadataManager {
             // Create request for metadata - we have to provide metadata so the request knows the correct container to use.
             // How can the metadata get metadata without metadata?
             // We have to mock the parts of the metadata the storage manager needs
-            $metadata = new EntityMetadata();
+            $metadata = new Entity();
             $metadata->setContainerName($this->metadataContainerName);
 
             // Create storage request, which we can reuse
-            $this->metadataStorageRequest = new StorageRequest($this->metadataDefaultResourceName, $metadata);
+            $this->metadataStorageRequest = new Request($this->metadataDefaultResourceName, $metadata);
         }
         return $this->metadataStorageRequest;
     }

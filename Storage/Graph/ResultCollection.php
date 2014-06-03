@@ -6,99 +6,10 @@
  * Time: 16:27
  */
 
-
-/**
- * Interface FetchCursor
- *
- * A base interface to be implemented by cursor objects for various data source types (MySQL, Mongo, etc)
- */
-interface FetchCursorInterface
-{
-    /**
-     * Returns a data object on success or false on fail
-     * @return object | false
-     */
-    public function getNext();
-
-    /**
-     * @return bool - true if the cursor has more data to fetch
-     */
-    public function hasMore();
-}
+namespace Dappl\Storage\Graph;
 
 
-
-class MongoFetchCursor implements FetchCursorInterface
-{
-    private $mongoCursor;
-
-
-    public function __construct(MongoCursor $cursor)
-    {
-        $this->mongoCursor = $cursor;
-    }
-
-
-    public function getNext()
-    {
-        $result = false;
-        if ($this->mongoCursor->hasNext()) {
-            $result = (object)$this->mongoCursor->getNext();
-        }
-        return $result;
-    }
-
-
-    public function hasMore()
-    {
-        return $this->mongoCursor->hasNext();
-    }
-}
-
-
-
-class BatchFetchCursor
-{
-    private $cursor;
-    private $batchSize;
-
-
-    public function __construct(FetchCursorInterface $cursor, $batchSize)
-    {
-        $this->cursor = $cursor;
-        $this->batchSize = $batchSize;
-    }
-
-
-    /**
-     * Populate the fetch result collection with data from the current cursor, upto the batch size
-     * @param FetchResultCollection $resultCollection
-     * @return FetchResultCollection
-     */
-    public function getNextBatch(FetchResultCollection $resultCollection)
-    {
-        $i = $this->batchSize;
-        while ($i > 0) {
-            $result = $this->cursor->getNext();
-            if (!$result) {
-                break;
-            }
-            $resultCollection->addEntity($result);
-            $i--;
-        }
-        return $resultCollection;
-    }
-
-
-    public function hasMore()
-    {
-        return $this->cursor->hasMore();
-    }
-}
-
-
-
-class FetchResultCollection implements Countable, Iterator
+class ResultCollection implements \Countable, \Iterator
 {
     private $items;
     private $primaryKey;
@@ -107,7 +18,7 @@ class FetchResultCollection implements Countable, Iterator
     private $fetchNode;
 
 
-    public function __construct(FetchNode $fetchNode = null)
+    public function __construct(Node $fetchNode = null)
     {
         $this->items = array();
         $this->indexNames = array();
@@ -137,7 +48,7 @@ class FetchResultCollection implements Countable, Iterator
         if (!empty($primaryKeyName)) {
             // At the moment keep things simple and require keys and indexes to be set upfront
             if (count($this->items)) {
-                throw new Exception('Cannot set primary key, we already have items stored');
+                throw new \Exception('Cannot set primary key, we already have items stored');
             }
 
             $this->primaryKey = $primaryKeyName;
@@ -164,7 +75,7 @@ class FetchResultCollection implements Countable, Iterator
     {
         // At the moment keep things simple and require keys and indexes to be set upfront
         if (count($this->items)) {
-            throw new Exception('Cannot add index, we already have items stored');
+            throw new \Exception('Cannot add index, we already have items stored');
         }
 
         // Ignore nothing or if the index is already defined as primary key
@@ -216,7 +127,7 @@ class FetchResultCollection implements Countable, Iterator
     public function getPrimaryKeyValue($entity)
     {
         if (!property_exists($entity, $this->primaryKey)) {
-            throw new Exception(sprintf('Cannot find primary key: [%s] in entity: [%s]', $this->primaryKey, serialize($entity)));
+            throw new \Exception(sprintf('Cannot find primary key: [%s] in entity: [%s]', $this->primaryKey, serialize($entity)));
         }
         $pk = $this->primaryKey;
         return is_float($entity->$pk) ? (int)$entity->$pk : $entity->$pk;
@@ -239,12 +150,12 @@ class FetchResultCollection implements Countable, Iterator
     public function getIndexValue($entity, $indexName)
     {
         if (empty($indexName)) {
-            throw new Exception('Cannot get index value, no index specified');
+            throw new \Exception('Cannot get index value, no index specified');
         }
 
         // Check index value exists on the entity
         if (!property_exists($entity, $indexName)) {
-            throw new Exception(sprintf('Cannot find index: [%s] in entity: [%s]', $indexName, serialize($entity)));
+            throw new \Exception(sprintf('Cannot find index: [%s] in entity: [%s]', $indexName, serialize($entity)));
         }
         return is_float($entity->$indexName) ? (int)$entity->$indexName : $entity->$indexName;
     }
@@ -264,7 +175,7 @@ class FetchResultCollection implements Countable, Iterator
     {
         // Sanity check
         if (!$entity || !is_object($entity)) {
-            throw new Exception('Error - cannot add entity with value: ' . serialize($entity));
+            throw new \Exception('Error - cannot add entity with value: ' . serialize($entity));
         }
 
         // Add to items either by primary key or normal array index
@@ -377,7 +288,7 @@ class FetchResultCollection implements Countable, Iterator
             return $itemIndexes && count($itemIndexes) ? $itemIndexes : array();
         } else {
             // oh dear
-            throw new Exception(sprintf('Undefined index:[%s]', $indexName));
+            throw new \Exception(sprintf('Undefined index:[%s]', $indexName));
         }
     }
 

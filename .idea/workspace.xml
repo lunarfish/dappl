@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3aa0fb6e-158d-47ce-bdc5-1cd1c6eeef8a" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/EntityMetadata.php" afterPath="$PROJECT_DIR$/EntityMetadata.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/FetchNode.php" afterPath="$PROJECT_DIR$/FetchNode.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/FetchNodeGraph.php" afterPath="$PROJECT_DIR$/FetchNodeGraph.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/RequestFilterParser.php" afterPath="$PROJECT_DIR$/RequestFilterParser.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/StorageManager.php" afterPath="$PROJECT_DIR$/StorageManager.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/StorageRequest.php" afterPath="$PROJECT_DIR$/StorageRequest.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="reporting_prototype.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -106,7 +100,7 @@
       <file leaf-file-name="FetchNodeGraph.php" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/FetchNodeGraph.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="9" column="0" selection-start="89" selection-end="89" vertical-scroll-proportion="0.081190795" vertical-offset="0" max-vertical-offset="3690">
+            <state line="9" column="0" selection-start="89" selection-end="89" vertical-scroll-proportion="0.081190795" vertical-offset="0" max-vertical-offset="3645">
               <folding />
             </state>
           </provider>

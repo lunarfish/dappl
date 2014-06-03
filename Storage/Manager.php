@@ -6,7 +6,12 @@
  * Time: 16:16
  */
 
-class StorageManager
+namespace Dappl\Storage;
+
+use \Dappl\Fetch\Request as StorageRequest;
+
+
+class Manager
 {
     private $mongoDB;
     private $metadata;
@@ -17,10 +22,10 @@ class StorageManager
         // Params will be current crm datastore_dev.yaml stuff describing connection details and driver to use
 
         // All mongo code for testing. Split out later to driver classes
-        $mongo = new MongoClient();
+        $mongo = new \MongoClient();
         $this->mongoDB = $mongo->selectDB('ukonline');
 
-        $mongo2 = new MongoClient();
+        $mongo2 = new \MongoClient();
         $this->metadata = $mongo2->selectDB('metadata');
     }
 
@@ -43,13 +48,13 @@ echo sprintf('Storage request on: %s, filter: %s, results: %d %s',
              json_encode($request->getFilter()),
              $cursor->count(),
              PHP_EOL);
-        return new MongoFetchCursor($cursor);
+        return new \Dappl\Storage\Cursor\MongoCursor($cursor);
     }
 
 
     public function prepareBatchFetch(StorageRequest $request, $batchSize)
     {
         $cursor = $this->prepareFetch($request);
-        return new BatchFetchCursor($cursor, $batchSize);
+        return new \Dappl\Storage\Cursor\BatchCursor($cursor, $batchSize);
     }
 } 
