@@ -132,15 +132,18 @@ class Request
                 break;
 
             case 'substringof':
-                $operator = new \MongoRegex('/' . str_replace("'","", $value) . '/i');
+				$operator = '$regex';
+                $value = new \MongoRegex('/' . str_replace("'","", $value) . '/i');
                 break;
 
             case 'endswith':
-                $operator = new \MongoRegex('/' . str_replace("'","", $value) . '$/i');
+				$operator = '$regex';
+				$value = new \MongoRegex('/' . str_replace("'","", $value) . '$/i');
                 break;
 
             case 'startswith':
-                $operator = new \MongoRegex('/^' . str_replace("'","", $value) . '/i');
+				$operator = '$regex';
+				$value = new \MongoRegex('/^' . str_replace("'","", $value) . '/i');
                 break;
 
             default:
@@ -152,7 +155,7 @@ class Request
         }
 
         if (is_array($this->filter[$property])) {
-            $this->filter[$property][$operator] = $value;
+			$this->filter[$property][$operator] = $value;
         } else {
             throw new \Exception(sprintf('Cannot add predicate: [%s], an equality value: [%s] exists already', $predicate, $this->filter[$property]));
         }

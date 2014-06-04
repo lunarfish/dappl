@@ -40,7 +40,7 @@ class ResultExpandProcessor implements ResultProcessorInterface
 		$nodeResultCollection = clone $nodeResultCollection;
 
 		// Create a new result set to return.
-		$returnResultCollection = new ResultCollection($nodeResultCollection->getFetchNode());
+		$returnResultCollection = new ResultCollection($nodeResultCollection->getNode());
 
 		// Define keys to match original node result collection
 		$returnResultCollection->setPrimaryKeyName($nodeResultCollection->getPrimaryKeyName());
@@ -67,7 +67,7 @@ class ResultExpandProcessor implements ResultProcessorInterface
 	public function embedMatchingChildResults(ResultCollection $returnResultCollection, ResultCollection $childResultCollection)
 	{
 		// Get the navigation property between the child collection and the base collection
-		$navigationProperty = $childResultCollection->getFetchNode()->getNavigationProperty();
+		$navigationProperty = $childResultCollection->getNode()->getNavigationProperty();
 		$nodeKey = $navigationProperty->getRelatedEntityKey();
 		$childKey = $navigationProperty->getEntityKey();
 		$name = $navigationProperty->getName();
@@ -95,7 +95,7 @@ class ResultExpandProcessor implements ResultProcessorInterface
 	public function createFetchResultCollectionEmbeddedWithChildResults(ResultCollection $returnResultCollection, ResultCollection $nodeResultCollection, ResultCollection $childResultCollection)
 	{
 		// Determine navigation property for this child node
-		$childFetchNode = $childResultCollection->getFetchNode();
+		$childFetchNode = $childResultCollection->getNode();
 		$childNavigationProperty = $childFetchNode->getNavigationProperty();
 		$childNavigationPropertyName = $childNavigationProperty->getName();
 		$nodeKey = $childNavigationProperty->getRelatedEntityKey();

@@ -32,7 +32,7 @@ class ResultCollection implements \Countable, \Iterator
      * passed to the root node in FetchNode::fetch()
      * @return FetchNode
      */
-    public function getFetchNode()
+    public function getNode()
     {
         return $this->fetchNode;
     }

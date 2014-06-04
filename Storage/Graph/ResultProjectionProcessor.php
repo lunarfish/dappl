@@ -32,7 +32,7 @@ class ResultProjectionProcessor implements ResultProcessorInterface
         $nodeResultCollection = clone $nodeResultCollection;
 
         // Create a new result set to return.
-        $returnResultCollection = new ResultCollection($nodeResultCollection->getFetchNode());
+        $returnResultCollection = new ResultCollection($nodeResultCollection->getNode());
 
         // Define keys to match original node result collection
         // NOTE here we are setting the primary key as an ordinary index, as a projection result set may contain multiple rows with the same primary key
@@ -54,7 +54,7 @@ class ResultProjectionProcessor implements ResultProcessorInterface
         }
 
         // If the node result collection is from the root node, we can strip fields down to those defined in $select of requests.
-        $fetchNode = $returnResultCollection->getFetchNode();
+        $fetchNode = $returnResultCollection->getNode();
         if ($fetchNode->isRoot()) {
             // Extract all required fields from the node tree
             $fields = array();
@@ -85,7 +85,7 @@ class ResultProjectionProcessor implements ResultProcessorInterface
     private function createNodeFetchResultCollectionMatchingChildResults(ResultCollection $returnResultCollection, ResultCollection $nodeResultCollection, ResultCollection $childResultCollection)
     {
         // Determine navigation property for this child node
-        $childFetchNode = $childResultCollection->getFetchNode();
+        $childFetchNode = $childResultCollection->getNode();
         $childNavigationProperty = $childFetchNode->getNavigationProperty();
         $nodeKey = $childNavigationProperty->getRelatedEntityKey();
         $childKey = $childNavigationProperty->getEntityKey();
@@ -131,7 +131,7 @@ class ResultProjectionProcessor implements ResultProcessorInterface
     private function embedMatchingChildResults($sourceNodeEntity, ResultCollection $returnResultCollection, ResultCollection $childResultCollection)
     {
         // Get the navigation property between the child collection and the base collection
-        $navigationProperty = $childResultCollection->getFetchNode()->getNavigationProperty();
+        $navigationProperty = $childResultCollection->getNode()->getNavigationProperty();
         $nodeKey = $navigationProperty->getRelatedEntityKey();
         $childKey = $navigationProperty->getEntityKey();
         $name = $navigationProperty->getName();
