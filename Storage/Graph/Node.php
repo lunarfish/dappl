@@ -474,6 +474,6 @@ class Node
      */
     public function log($msg)
     {
-        echo $this->getName() . ': ' . $msg . PHP_EOL;
+        //echo $this->getName() . ': ' . $msg . PHP_EOL;
     }
 } 

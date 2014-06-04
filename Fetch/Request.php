@@ -98,7 +98,7 @@ class Request
 
 
         $operator = null;
-echo sprintf('%s: Adding predicate: %s on path: %s', $this->defaultResourceName, $predicate, $property) . PHP_EOL;
+//echo sprintf('%s: Adding predicate: %s on path: %s', $this->defaultResourceName, $predicate, $property) . PHP_EOL;
         switch($predicate->getOperator()) {
             case 'eq':
                 // WE CANNOT MERGE THIS WITH ANOTHER

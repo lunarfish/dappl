@@ -29,7 +29,7 @@ class Entity
     {
         // All entities should have a name
         if (!isset($this->data['shortName'])) {
-            throw new Exception('No entity name defined in: [' . serialize($this) . ']');
+            throw new \Exception('No entity name defined in: [' . serialize($this) . ']');
         }
         return $this->data['shortName'];
     }
@@ -39,7 +39,7 @@ class Entity
     {
         // All entities should have a default resource name
         if (!isset($this->data['defaultResourceName'])) {
-            throw new Exception('No defaultResourceName defined in: [' . serialize($this) . ']');
+            throw new \Exception('No defaultResourceName defined in: [' . serialize($this) . ']');
         }
         return $this->data['defaultResourceName'];
     }
@@ -49,7 +49,7 @@ class Entity
     {
         // Current format metadata is stored in 'description' property
         if (!array_key_exists('description', $data)) {
-            throw new Exception('Metadata description missing');
+            throw new \Exception('Metadata description missing');
         }
         $this->data = $data['description'];
     }
@@ -62,7 +62,7 @@ class Entity
     {
         $fields = $this->getPropertyFields($propertyName);
         if (!isset($fields['dataType'])) {
-            throw new Exception(sprintf('Could not find data type for property [%s] on entity: [%s]', $propertyName, $this->getEntityName()));
+            throw new \Exception(sprintf('Could not find data type for property [%s] on entity: [%s]', $propertyName, $this->getEntityName()));
         }
         return $fields['dataType'];
     }
@@ -80,12 +80,12 @@ class Entity
                     $this->dataPropertiesCache[$prop['name']] = $prop;
                 }
             } else {
-                throw new Exception(sprintf('Could not find property [%s] for entity: [%s] - data properties not defined in metadata', $propertyName, $this->getEntityName()));
+                throw new \Exception(sprintf('Could not find property [%s] for entity: [%s] - data properties not defined in metadata', $propertyName, $this->getEntityName()));
             }
         }
 
         if (!array_key_exists($propertyName, $this->dataPropertiesCache)) {
-            throw new Exception(sprintf('Could not find property [%s] for entity: [%s]', $propertyName, $this->getEntityName()));
+            throw new \Exception(sprintf('Could not find property [%s] for entity: [%s]', $propertyName, $this->getEntityName()));
         }
         return $this->dataPropertiesCache[$propertyName];
     }

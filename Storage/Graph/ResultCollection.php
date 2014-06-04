@@ -344,6 +344,21 @@ class ResultCollection implements \Countable, \Iterator
     }
 
 
+	/**
+	 * Appends collection items to target array
+	 * list ... each seems to be fasterest on the block to do this
+	 * http://www.php.net/manual/en/function.array-walk.php#112722
+	 * @param $target
+	 */
+	public function appendItems(array &$target)
+	{
+		reset($this->items);
+		while (list($key, $value) = each($this->items)) {
+			$target[] = $value;
+		}
+	}
+
+
     /**
      * To support countable interface
      *
