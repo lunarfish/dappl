@@ -258,7 +258,7 @@ db.Entities.update({name: 'Locations'}, {
         ],
         "navigationProperties" : [
             {
-                "name" : "LookupCountys",
+                "name" : "LookupCounty",
                 "entityTypeName" : "LookupCounty:#Tinder",
                 "isScalar" : true,
                 "associationName" : "Location_LookupCounty",

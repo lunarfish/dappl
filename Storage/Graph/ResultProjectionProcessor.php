@@ -31,27 +31,34 @@ class ResultProjectionProcessor implements ResultProcessorInterface
         //       @todo: alter algorithm to avoid having to do this.
         $nodeResultCollection = clone $nodeResultCollection;
 
-        // Create a new result set to return.
-        $returnResultCollection = new ResultCollection($nodeResultCollection->getNode());
+		$returnResultCollection = null;
+		if (count($childResults)) {
+			// Create a new result set to return.
+			$returnResultCollection = new ResultCollection($nodeResultCollection->getNode());
 
-        // Define keys to match original node result collection
-        // NOTE here we are setting the primary key as an ordinary index, as a projection result set may contain multiple rows with the same primary key
-        $returnResultCollection->addIndex($nodeResultCollection->getPrimaryKeyName());
-        $returnResultCollection->addIndexNames($nodeResultCollection->getIndexNames());
+			// Define keys to match original node result collection
+			// NOTE here we are setting the primary key as an ordinary index, as a projection result set may contain multiple rows with the same primary key
+			$returnResultCollection->addIndex($nodeResultCollection->getPrimaryKeyName());
+			$returnResultCollection->addIndexNames($nodeResultCollection->getIndexNames());
 
-        // Last child first - merge matches in last child into result collection (3 way merge)
-        $childResultCollection = end($childResults);
-        $this->createNodeFetchResultCollectionMatchingChildResults($returnResultCollection, $nodeResultCollection, $childResultCollection);
+			// Last child first - merge matches in last child into result collection (3 way merge)
+			$childResultCollection = end($childResults);
+			$this->createNodeFetchResultCollectionMatchingChildResults($returnResultCollection, $nodeResultCollection, $childResultCollection);
 
-        // We only want to iterate this filtered return result set, but add to it as we go.
-        // To avoid breaking the iterator make a copy before we start.
-        $returnNodesToIterate = $returnResultCollection->getAll();
-        foreach($returnNodesToIterate as $nodeEntity) {
-            // using this node entity as a base object, embed all the child nodes, adding extra rows for multiple results
-            foreach($childResults as $childResultCollection) {
-                $this->embedMatchingChildResults($nodeEntity, $returnResultCollection, $childResultCollection);
-            }
-        }
+			// We only want to iterate this filtered return result set, but add to it as we go.
+			// To avoid breaking the iterator make a copy before we start.
+			$returnNodesToIterate = $returnResultCollection->getAll();
+			foreach($returnNodesToIterate as $nodeEntity) {
+				// using this node entity as a base object, embed all the child nodes, adding extra rows for multiple results
+				foreach($childResults as $childResultCollection) {
+					$this->embedMatchingChildResults($nodeEntity, $returnResultCollection, $childResultCollection);
+				}
+			}
+		} else {
+			// We didn't need to process child results, so just use the copy.
+			// - playing safe here, may be possible always to use original input instead
+			$returnResultCollection = $nodeResultCollection;
+		}
 
         // If the node result collection is from the root node, we can strip fields down to those defined in $select of requests.
         $fetchNode = $returnResultCollection->getNode();

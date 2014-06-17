@@ -299,7 +299,9 @@ class Node
             // Return true so we can get called again by the client
             return true;
         } else {
-            return $this->fetchFromLeafNode();
+			// If we are a remote leaf node, return leaf fetch. If we are a leaf root node, process results to ensure projection is processed.
+			$leafResults = $this->fetchFromLeafNode();
+            return $this->isRoot() && is_object($leafResults) ? $this->resultProcessor->combineNodeAndChildNodeResults(array(), $leafResults) : $leafResults;
         }
     }
 
