@@ -38,6 +38,13 @@ class PredicateParser
 			// Handle token
 			$token = $this->getNextToken();
 			switch($token->getType()) {
+                case FilterToken::STRING:
+                case FilterToken::COMMAND:
+                    // If we are hitting a string/command here it's a single predicate with no parenthesis
+                    $this->getPrevToken();
+                    $this->eatPredicate();
+                    break;
+
 				case FilterToken::OPEN_BRACKET:
 					$this->eatPredicate();
 					break;
@@ -105,8 +112,7 @@ class PredicateParser
 			FilterToken::QUOTED_STRING,
 			FilterToken::CLOSE_BRACKET,
 			FilterToken::OPERATOR,
-			FilterToken::BOOL,
-			FilterToken::CLOSE_BRACKET
+			FilterToken::BOOL
 		), array(
 			FilterToken::OPEN_BRACKET,
 			FilterToken::QUOTED_STRING,
@@ -114,8 +120,7 @@ class PredicateParser
 			FilterToken::STRING,
 			FilterToken::CLOSE_BRACKET,
 			FilterToken::OPERATOR,
-			FilterToken::BOOL,
-			FilterToken::CLOSE_BRACKET
+			FilterToken::BOOL
 		));
 
 		// If we are handling substringof, it has different expectations
@@ -142,6 +147,19 @@ class PredicateParser
 			}
 		}
 
+        // Eat the last token which must be either CLOSE_BRACKET or EOF
+        if ($this->hasMoreTokens()) {
+            // Check token
+            $token = $this->getNextToken();
+            $type = $token->getType();
+            if (FilterToken::CLOSE_BRACKET !== $type) {
+                throw new \Exception(sprintf('%s: Found incorrect final token type: %s, expected: %s at %s processing %s' , __METHOD__, $type, FilterToken::CLOSE_BRACKET, $start, $commandToken));
+            }
+
+            // Store
+            $tokenList[] = $token;
+        }
+
 		// Create predicate from token list
 		if ($mode) {
 			$this->pushPredicate($tokenList[4], $tokenList[0], $tokenList[2]);
@@ -159,8 +177,7 @@ class PredicateParser
 	{
 		$expectedTypes = array(
 			FilterToken::OPERATOR,
-			FilterToken::STRING,
-			FilterToken::CLOSE_BRACKET
+			FilterToken::STRING
 		);
 
 		// We already have the property token to start us off.
@@ -182,9 +199,19 @@ class PredicateParser
 				// Store
 				$tokenList[] = $token;
 			} else {
-				throw new \Exception(sprintf('%s: Ran out of tokens at %s processing %s'), __METHOD__, $start, $propertyToken);
+				throw new \Exception(sprintf('%s: Ran out of tokens at %s processing %s', __METHOD__, $start, $propertyToken));
 			}
 		}
+
+        // Eat the closing bracket or EOF
+        if ($this->hasMoreTokens()) {
+            // Check token
+            $token = $this->getNextToken();
+            $type = $token->getType();
+            if (FilterToken::CLOSE_BRACKET != $type) {
+                throw new \Exception(sprintf('%s: Expected close brackets at %s but found [%s]', __METHOD__, $start, $token->getValue()));
+            }
+        }
 
 		// Create predicate from token list
 		$this->pushPredicate($tokenList[0], $tokenList[1], $tokenList[2]);

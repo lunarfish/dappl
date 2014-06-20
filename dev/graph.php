@@ -1,11 +1,49 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rick
- * Date: 03/06/2014
- * Time: 19:37
+ * Basic cli interface
+ *
+ *
+ *
+ * php -f /var/www/crm/src/Dappl/src/Dappl/dev/graph.php LookupCountys 10 "LookupCountyID gt 1" LookupCountyID
+ * php -f /var/www/crm/src/Dappl/src/Dappl/dev/graph.php LookupCountys 10 "substringof('ham',Description) eq true" LookupCountyID,Description
+ *
+ *
  */
 
+use \Dappl\Storage\Manager as StorageManager;
+use \Dappl\Metadata\Manager as MetadataManager;
+use \Dappl\Storage\Graph\ResultProjectionProcessor;
+use \Dappl\Fetch\FilterTokenizer;
+use \Dappl\Fetch\PredicateParser;
+use \Dappl\Storage\Graph\Graph;
+use \Dappl\Storage\Graph\ResultCollection;
+
+
+require_once __DIR__ . '/../../crm/vendor/autoload.php';
+
+
+
+// Profiling
+$startTime = microtime(true);
+$batchSize = 10000;
+
+// Validate input
+if (isset($argc)) {
+    if (($argc < 3) || ($argc > 5)) {
+        echo 'Error: Invalid arguments. Usage: php -f ' . __FILE__ . ' <entitySet: req> <batchsize: req> <filter: optional> <select: optional>' . PHP_EOL;
+        exit(1);
+    }
+}
+
+// Parse input
+$entitySet = $argv[1];
+$batchSize = (int)$argv[2];
+$filter = isset($argv[3]) ? $argv[3] : '';
+$select = isset($argv[4]) ? $argv[4] : '';
+
+// Process select
+$select = explode(',', $select);
 
 // Setup the managers
 $storageManager = new StorageManager(array());
@@ -13,33 +51,22 @@ $metadataManager = new MetadataManager(array(
 	'metadata_container_name' => 'mongo.metadata',
 	'metadata_default_resource_name' => 'Entities'
 ), $storageManager);
-$resultProcessor = new FetchNodeResultProjectionProcessor();
+$resultProcessor = new ResultProjectionProcessor();
 
 // Setup filter parsing
-$scanner = new RequestFilterTokenizer();
-$parser = new RequestFilterPredicateParser();
+$scanner = new FilterTokenizer();
+$parser = new PredicateParser();
 
-
-$startTime = microtime(true);
-$batchSize = 10000;
-
-
-$filter = <<< 'HEREDOC'
-((LocationID gt 13000) and (LookupCountys%2FLookupNations%2FNation eq 'Wales')
-HEREDOC;
-
-$defaultResourceName = 'Locations';
-
-$graph = new FetchNodeGraph($metadataManager, $storageManager, $resultProcessor, $batchSize);
+// Build graph
+$graph = new Graph($metadataManager, $storageManager, $resultProcessor, $batchSize);
 $predicates = $graph->extractPredicates($scanner, $parser, $filter);
-$rootNode = $graph->buildGraph($defaultResourceName, $predicates, array('LocationID', 'Address1', 'PostCode', 'LookupCountyID', 'LookupCountys/Description'));
+$rootNode = $graph->buildGraph($entitySet, $predicates, $select);
 
-$request = $rootNode->getBaseRequest();
-//$request->setSelect(array('LocationID', 'Address1', 'PostCode', 'LookupCountyID'));
 
+// Execute request
 $total = 0;
 $result = null;
-$input = new FetchResultCollection();
+$input = new ResultCollection();
 $rootNode->prepare($input);
 do {
 	$result = $rootNode->fetch();
@@ -58,7 +85,7 @@ do {
 // Profile
 $endTime = microtime(true);
 echo 'Batch size: ' . $batchSize;
-echo ' Target: ' . $defaultResourceName;
+echo ' Target: ' . $entitySet;
 echo ' Time: ' . round($endTime - $startTime, 2) . " Sec.";
 echo ' Total found: ' . $total;
 echo " Memory: ".(memory_get_peak_usage(true)/1024/1024)." MB";

@@ -75,7 +75,12 @@ class FilterTokenizer
 	}
 
 
-	private function getNextChar($advancePointer = true)
+    /**
+     * Returns the current pointer character, or false if we've hit the end.
+     * @param bool $advancePointer - set to false to return character without advancing pointer
+     * @return bool | char
+     */
+    private function getNextChar($advancePointer = true)
 	{
 		$char = false;
 		if ($this->pos < strlen($this->input)) {
@@ -98,7 +103,7 @@ class FilterTokenizer
 
 	private function isStringTerminator($char)
 	{
-		return ($char === '(') || ($char === ')') || ($char === ',') || ($char === ' ');
+		return ($char === '(') || ($char === ')') || ($char === ',') || ($char === ' ') || (false === $char);
 	}
 
 
@@ -120,37 +125,34 @@ class FilterTokenizer
 		// Eat upto the next close bracket, space or comma
 		$col = $this->pos;
 		$char = $this->getNextChar();
-		while((false !== $char) && !$this->isStringTerminator($char)) {
+		while(!$this->isStringTerminator($char)) {
 			$word .= $char;
 			$char = $this->getNextChar();
 		}
 
-		// Did we fail?
-		if (false !== $char) {
-			// Rewind
-			$this->skipBackChar();
+        if (false !== $char) {
+            // If we are not finished, rewind
+            $this->skipBackChar();
+        }
 
-			// Match command?
-			$word = trim($word);
-			$key = array_search($word, $commandList);
-			if (false !== $key) {
-				$this->pushToken(FilterToken::COMMAND, $commandList[$key]);
-				return;
-			}
+        // Match command?
+        $word = trim($word);
+        $key = array_search($word, $commandList);
+        if (false !== $key) {
+            $this->pushToken(FilterToken::COMMAND, $commandList[$key]);
+            return;
+        }
 
-			// Match binary?
-			$key = array_search($word, $boolList);
-			if (false !== $key) {
-				$this->pushToken(FilterToken::BOOL, $boolList[$key]);
-				return;
-			}
+        // Match binary?
+        $key = array_search($word, $boolList);
+        if (false !== $key) {
+            $this->pushToken(FilterToken::BOOL, $boolList[$key]);
+            return;
+        }
 
-			// Anything else must be a string. Convert any escaped forward slashes while we are here.
-			$word = str_replace('%2F', '/', $word);
-			$this->pushToken(FilterToken::STRING, $word);
-		} else {
-			throw new \Exception(sprintf('Failed to to eat command, string or bool from col: %d on input: [%s]', $col, $word));
-		}
+        // Anything else must be a string. Convert any escaped forward slashes while we are here.
+        $word = str_replace('%2F', '/', $word);
+        $this->pushToken(FilterToken::STRING, $word);
 	}
 
 
