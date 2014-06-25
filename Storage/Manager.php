@@ -13,48 +13,69 @@ use \Dappl\Fetch\Request as StorageRequest;
 
 class Manager
 {
-    private $mongoDB;
-    private $metadata;
+    private $isDebugging;
+    private $driverParams;
+    private $driverCache;
 
 
     public function __construct(array $params)
     {
         // Params will be current crm datastore_dev.yaml stuff describing connection details and driver to use
+        if (!array_key_exists('driver_params', $params) || !is_array($params['driver_params'])) {
+            throw new \Exception('driver_params are not defined');
+        }
+        $this->driverParams = $params['driver_params'];
 
-        // All mongo code for testing. Split out later to driver classes
-        $mongo = new \MongoClient();
-        $this->mongoDB = $mongo->selectDB('ukonline');
+        // @todo: instead provide logging instance to direct messages to
+        $this->isDebugging = array_key_exists('debug', $params) && $params['debug'];
 
-        $mongo2 = new \MongoClient();
-        $this->metadata = $mongo2->selectDB('metadata');
+        $this->driverCache = array();
+    }
+
+
+    public function getDriver(StorageRequest $request)
+    {
+        // Get the container name from the metadata, which defines where we should fetch data from
+        $containerName = $request->getMetadata()->getContainerName();
+        if (!array_key_exists($containerName, $this->driverCache)) {
+            // Check we have parameters for this container
+            if (!array_key_exists($containerName, $this->driverParams)) {
+                throw new \Exception(sprintf('No driver parameters defined for container: [%s]', $containerName));
+            }
+
+            // At the moment the driver type is embedded into the container name
+            // @todo: change to a 'driver' parameter
+            $bang = explode('.', $containerName);
+            if (2 != count($bang)) {
+                throw new \Exception(sprintf('Illegal container name: [%s], must be <driver name>.<container name>', $containerName));
+            }
+
+            $class = '\Dappl\Storage\Driver\\' . ucfirst($bang[0]) . 'Driver';
+            $driver = new $class();
+            $driver->connect($this->driverParams[$containerName]);
+            $this->driverCache[$containerName] = $driver;
+        }
+        return $this->driverCache[$containerName];
     }
 
 
     public function fetchOne(StorageRequest $request)
     {
-        // stub for real functionality
-        $collection = $this->metadata->selectCollection('Entities');
-        return $collection->findOne($request->getFilter());
+        $driver = $this->getDriver($request);
+        return $driver->fetchOne($request);
     }
 
 
     public function prepareFetch(StorageRequest $request)
     {
-        // All mongo code for testing. Split out later to driver classes
-        $collection = $this->mongoDB->selectCollection($request->getDefaultResourceName());
-        $cursor = $collection->find($request->getFilter());
-/*echo sprintf('Storage request on: %s, filter: %s, results: %d %s',
-             $request->getDefaultResourceName(),
-             json_encode($request->getFilter()),
-             $cursor->count(),
-             PHP_EOL);*/
-        return new \Dappl\Storage\Cursor\MongoCursor($cursor);
+        $driver = $this->getDriver($request);
+        return $driver->prepareFetch($request);
     }
 
 
     public function prepareBatchFetch(StorageRequest $request, $batchSize)
     {
-        $cursor = $this->prepareFetch($request);
-        return new \Dappl\Storage\Cursor\BatchCursor($cursor, $batchSize);
+        $driver = $this->getDriver($request);
+        return $driver->prepareBatchFetch($request, $batchSize);
     }
 } 

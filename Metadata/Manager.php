@@ -14,6 +14,8 @@ class Manager {
     private $metadataStorageRequest;
     private $storageManager;
 
+    private $containerNames;
+
 
     const CACHE_PREFIX_ENTITY = 'Entity.';
     const CACHE_PREFIX_RESOURCE = 'Resource.';
@@ -30,6 +32,11 @@ class Manager {
         }
         $this->metadataContainerName = $params['metadata_container_name'];
         $this->metadataDefaultResourceName = $params['metadata_default_resource_name'];
+
+
+        // temp measure
+        $this->containerNames = isset($params['container_names']) ? $params['container_names'] : null;
+
 
         // Setup cache
         $this->cache = array();
@@ -53,9 +60,7 @@ class Manager {
             }
 
             // Populate new EntityMetadata
-            $entityMetadata = new Entity();
-            $entityMetadata->setData($metadata);
-
+            $entityMetadata = $this->createMetadataEntity($metadata);
             $this->addToCache($entityMetadata);
         }
 
@@ -77,13 +82,28 @@ class Manager {
             }
 
             // Populate new EntityMetadata
-            $entityMetadata = new Entity();
-            $entityMetadata->setData($metadata);
-
+            $entityMetadata = $this->createMetadataEntity($metadata);
             $this->addToCache($entityMetadata);
         }
 
         return $this->cache[$cacheName];
+    }
+
+
+    private function createMetadataEntity(array $metadata)
+    {
+        $entityMetadata = new Entity();
+        $entityMetadata->setData($metadata);
+
+        // Locate default resource name from raw data
+        $defaultResourceName = isset($metadata['description']['defaultResourceName']) ? $metadata['description']['defaultResourceName'] : null;
+
+        if ($this->containerNames &&
+            $defaultResourceName &&
+            array_key_exists($defaultResourceName, $this->containerNames)) {
+            $entityMetadata->setContainerName($this->containerNames[$defaultResourceName]);
+        }
+        return $entityMetadata;
     }
 
 

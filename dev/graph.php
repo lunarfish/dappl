@@ -9,6 +9,24 @@
  * php -f /var/www/crm/src/Dappl/src/Dappl/dev/graph.php LookupCountys 10 "substringof('ham',Description) eq true" LookupCountyID,Description
  *
  *
+ *
+ * From live-app-crm /var/scripts/bin/reports/sql
+ * php -f /var/www/crm/src/Dappl/src/Dappl/dev/graph.php People 10 "PersonCentreRoles/Centre/PartnerType eq 'Access Point'" PersonID,Email
+ *
+ *
+ * above must satisfy this sql:
+ * SELECT distinct email
+FROM People, Centres, PeopleLinksCentresRoles
+WHERE People.PersonID = PeopleLinksCentresRoles.PersonID
+AND Centres.CentreID = PeopleLinksCentresRoles.CentreID
+AND Centres.CentreActive = 1
+AND Centres.PartnerType = 'Access Point'
+AND People.NetsuiteID != 0
+AND email != '';
+ *
+ *
+ * Also a report to find FirstName contains 'John', LastName contains 'Smith' fails
+ *
  */
 
 use \Dappl\Storage\Manager as StorageManager;
@@ -45,11 +63,21 @@ $select = isset($argv[4]) ? $argv[4] : '';
 // Process select
 $select = explode(',', $select);
 
+
+// Temp measure - load container names for each entity from yaml file - in future will be embedded within metadata
+$containerNames = \Symfony\Component\Yaml\Yaml::parse(__DIR__ . '/../../crm/boot/config/crm/dataservice.yaml');
+
+// Need to shuffle to create a src, vendor and config directory structure to put this in...
+// default to local when apache envars is missing - important for cli where there are no apache envars...
+$environment = isset($_SERVER['TINDER_CORE_ENVIROMENT']) ? $_SERVER['TINDER_CORE_ENVIROMENT'] : 'local';
+$driverParams = \Symfony\Component\Yaml\Yaml::parse(__DIR__ . '/../../crm/boot/config/crm/datastore_' . $environment . '.yaml');
+
 // Setup the managers
-$storageManager = new StorageManager(array());
+$storageManager = new StorageManager(array('debug' => true, 'driver_params' => $driverParams));
 $metadataManager = new MetadataManager(array(
 	'metadata_container_name' => 'mongo.metadata',
-	'metadata_default_resource_name' => 'Entities'
+	'metadata_default_resource_name' => 'Entities',
+    'container_names' => $containerNames
 ), $storageManager);
 $resultProcessor = new ResultProjectionProcessor();
 
