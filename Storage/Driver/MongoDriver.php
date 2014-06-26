@@ -14,8 +14,9 @@ use \Dappl\Fetch\Request as StorageRequest;
 class MongoDriver implements DriverInterface
 {
     private $db;
+    private $isDebugging;
 
-    public function connect(array $params)
+    public function connect(array $params, $isDebugging)
     {
         // Are we already connected?
         if ($this->db) {
@@ -30,6 +31,8 @@ class MongoDriver implements DriverInterface
         if (!$this->db) {
             throw new \Exception(sprintf('Could not connect to db: [%s]', $dbName));
         }
+
+        $this->isDebugging = $isDebugging;
     }
 
 
@@ -45,13 +48,13 @@ class MongoDriver implements DriverInterface
         // All mongo code for testing. Split out later to driver classes
         $collection = $this->db->selectCollection($request->getDefaultResourceName());
         $cursor = $collection->find($request->getFilter());
-        //if ($this->isDebugging) {
+        if ($this->isDebugging) {
             echo sprintf('Storage request on: %s, filter: %s, results: %d %s',
                 $request->getDefaultResourceName(),
                 json_encode($request->getFilter()),
                 $cursor->count(),
                 PHP_EOL);
-        //}
+        }
         return new \Dappl\Storage\Cursor\MongoCursor($cursor);
     }
 
@@ -59,7 +62,7 @@ class MongoDriver implements DriverInterface
     public function prepareBatchFetch(StorageRequest $request, $batchSize)
     {
         $cursor = $this->prepareFetch($request);
-        return new \Dappl\Storage\Cursor\BatchCursor($cursor, $batchSize);
+        return new \Dappl\Storage\Cursor\BatchCursor($cursor, $batchSize, $this->isDebugging);
     }
 
 } 

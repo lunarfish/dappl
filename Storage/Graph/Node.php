@@ -27,12 +27,13 @@ class Node
 
     private $storageManager;
     private $batchFetchCursor;
-    private $keepList;
 
     // New format data
     private $inputData;
     private $childNodeResults;
     private $fetchResultCollection;
+    private $isDebugging;
+
 
     // State enum
     const UNREADY = 0;
@@ -40,7 +41,7 @@ class Node
     const COMPLETE = 2;
 
 
-    public function __construct(MetadataManager $metadataManager, Request $baseRequest, StorageManager $storageManager, $batchSize, ResultProcessorInterface $resultProcessor)
+    public function __construct(MetadataManager $metadataManager, Request $baseRequest, StorageManager $storageManager, $batchSize, ResultProcessorInterface $resultProcessor, $isDebugging)
     {
         $this->metadataManager = $metadataManager;
         $this->baseRequest = $baseRequest;
@@ -53,6 +54,7 @@ class Node
         $this->batchFetchCursor = null;
         $this->keepList = array();
         $this->childNodeResults = array();
+        $this->isDebugging = $isDebugging;
     }
 
 
@@ -175,12 +177,26 @@ class Node
      * READY - prepared and able to return results
      * COMPLETE - returned everything we can for the criteria set in prepare()
      */
-    public function getState()
+    public function getState($checkChildren = false)
     {
         if (!$this->batchFetchCursor) {
             return self::UNREADY;
         }
-        return $this->batchFetchCursor->hasMore() ? self::READY : self::COMPLETE;
+
+        if (count($this->children) && $checkChildren && !$this->batchFetchCursor->hasMore()) {
+            // We only consider ourselves complete when all our child nodes are also complete
+            $state = self::COMPLETE;
+            foreach($this->children as $childNode) {
+                if (self::COMPLETE != $childNode->getState()) {
+                    $state = self::READY;
+                    break;
+                }
+            }
+            return $state;
+        } else {
+            // No child nodes, so it's just our state to return
+            return $this->batchFetchCursor->hasMore() ? self::READY : self::COMPLETE;
+        }
     }
 
 
@@ -208,7 +224,7 @@ class Node
             }
         }
         if ($purge) {
-            $this->log('getFetchResultCollection purge');
+            //$this->log('getFetchResultCollection purge');
             $this->fetchResultCollection->purge();
         }
         return $this->fetchResultCollection;
@@ -217,6 +233,8 @@ class Node
 
     public function prepare(ResultCollection $inputResultCollection)
     {
+        $this->log('*prepare method*');
+
         // We should not be called if we already have a cursor that is in flight
         if (self::UNREADY !== $this->getState()) {
             throw new \Exception($this->getName() . ' node error - prepare called with existing active batch cursor');
@@ -231,7 +249,6 @@ class Node
 
         // Create the cursor
         $this->batchFetchCursor = $this->storageManager->prepareBatchFetch($request, $this->batchSize);
-        $this->log('Created new batch fetch cursor from input data rows: ' . count($inputResultCollection));
 
         // Clear our result collection
         $fetchResultCollection = $this->getFetchResultCollection(true);
@@ -242,7 +259,6 @@ class Node
         if (count($this->children)) {
             // This is not a leaf node, so we must fetch our results now so it's ready when child node results come in and we need to compile
             $this->batchFetchCursor->getNextBatch($fetchResultCollection);
-            $this->log('Prepare parent - fetched data rows: ' . count($fetchResultCollection));
 
             $this->childNodeResults = array();
         } else {
@@ -265,6 +281,8 @@ class Node
      */
     public function fetch()
     {
+        $this->log('*fetch method*');
+
         // Sanity check. We must always have a cursor defined
         if (!$this->batchFetchCursor) {
             throw new \Exception($this->getName() . ' node error - fetch called us when we had no cursor defined');
@@ -275,6 +293,13 @@ class Node
             // Get results from child nodes. If we previously returned result continue from the end
             $startIndex = count($this->childNodeResults) ? count($this->childNodeResults) - 1 : 0;
             $result = $this->fetchFromChildNode($startIndex);
+
+            if (true === $result) {
+                // If child nodes returned true they have more results to fetch. We cannot call back directly as we could lead to too much recursion
+                // Return true so we get called again by client
+                return $result;
+            }
+
             if ($result) {
                 // Child nodes returned a result, return it.
                 return $this->resultProcessor->combineNodeAndChildNodeResults($result, $this->getFetchResultCollection());
@@ -301,6 +326,9 @@ class Node
         } else {
 			// If we are a remote leaf node, return leaf fetch. If we are a leaf root node, process results to ensure projection is processed.
 			$leafResults = $this->fetchFromLeafNode();
+            if (true === $leafResults) {
+                return true;
+            }
             return $this->isRoot() && is_object($leafResults) ? $this->resultProcessor->combineNodeAndChildNodeResults(array(), $leafResults) : $leafResults;
         }
     }
@@ -352,7 +380,8 @@ class Node
         $childNode = $this->children[$childIndex];
 
         // Is child node complete?
-        $state = $childNode->getState();
+        // - the getState(true) to check child nodes also is a bit hacky - need to refactor so this isn't required
+        $state = $childNode->getState(true);
         if (self::COMPLETE === $state) {
             // This node is complete
             $this->log('Child node: ' . $childNode->getName() . ' completed. Purging child node and removing results');
@@ -476,6 +505,8 @@ class Node
      */
     public function log($msg)
     {
-        echo $this->getName() . ': ' . $msg . PHP_EOL;
+        if ($this->isDebugging) {
+            echo sprintf('[Node: %s] - %s%s', $this->getName(), $msg, PHP_EOL);
+        }
     }
 } 

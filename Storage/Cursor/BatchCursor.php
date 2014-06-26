@@ -15,12 +15,14 @@ class BatchCursor
 {
 	private $cursor;
 	private $batchSize;
+    private $isDebugging;
 
 
-	public function __construct(CursorInterface $cursor, $batchSize)
+	public function __construct(CursorInterface $cursor, $batchSize, $isDebugging)
 	{
 		$this->cursor = $cursor;
 		$this->batchSize = $batchSize;
+        $this->isDebugging = $isDebugging;
 	}
 
 
@@ -40,6 +42,14 @@ class BatchCursor
 			$resultCollection->addEntity($result);
 			$i--;
 		}
+
+        if ($this->isDebugging) {
+            echo sprintf('Fetched batch from: %s items: %d %s',
+                $resultCollection->getNode()->getName(),
+                count($resultCollection),
+                PHP_EOL);
+        }
+
 		return $resultCollection;
 	}
 

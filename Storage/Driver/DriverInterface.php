@@ -15,7 +15,7 @@ use \Dappl\Fetch\Request as StorageRequest;
  */
 interface DriverInterface
 {
-    public function connect(array $params);
+    public function connect(array $params, $isDebugging);
 
 
     public function fetchOne(StorageRequest $request);

@@ -52,7 +52,7 @@ class Manager
 
             $class = '\Dappl\Storage\Driver\\' . ucfirst($bang[0]) . 'Driver';
             $driver = new $class();
-            $driver->connect($this->driverParams[$containerName]);
+            $driver->connect($this->driverParams[$containerName], $this->isDebugging);
             $this->driverCache[$containerName] = $driver;
         }
         return $this->driverCache[$containerName];

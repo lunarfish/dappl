@@ -2,11 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3aa0fb6e-158d-47ce-bdc5-1cd1c6eeef8a" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Storage/Driver/DriverInterface.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Storage/Driver/MongoDriver.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Metadata/Manager.php" afterPath="$PROJECT_DIR$/Metadata/Manager.php" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dev/verify_ap.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Storage/Cursor/BatchCursor.php" afterPath="$PROJECT_DIR$/Storage/Cursor/BatchCursor.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Storage/Driver/DriverInterface.php" afterPath="$PROJECT_DIR$/Storage/Driver/DriverInterface.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Storage/Graph/Graph.php" afterPath="$PROJECT_DIR$/Storage/Graph/Graph.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Storage/Manager.php" afterPath="$PROJECT_DIR$/Storage/Manager.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Storage/Driver/MongoDriver.php" afterPath="$PROJECT_DIR$/Storage/Driver/MongoDriver.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Storage/Graph/Node.php" afterPath="$PROJECT_DIR$/Storage/Graph/Node.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Controller/Report.php" afterPath="$PROJECT_DIR$/Controller/Report.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Storage/Graph/ResultProjectionProcessor.php" afterPath="$PROJECT_DIR$/Storage/Graph/ResultProjectionProcessor.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dev/graph.php" afterPath="$PROJECT_DIR$/dev/graph.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -31,96 +35,31 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="graph.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/dev/graph.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="76" column="0" selection-start="2585" selection-end="2585" vertical-scroll-proportion="-5.125" vertical-offset="1017" max-vertical-offset="1890">
-              <folding>
-                <element signature="e#7#926#0" expanded="true" />
-                <element signature="e#928#973#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Manager.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Storage/Manager.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="79" column="0" selection-start="2616" selection-end="2616" vertical-scroll-proportion="-28.041666" vertical-offset="437" max-vertical-offset="1215">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Request.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Fetch/Request.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="27" column="0" selection-start="492" selection-end="492" vertical-scroll-proportion="-5.125" vertical-offset="192" max-vertical-offset="2790">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DriverInterface.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Storage/Driver/DriverInterface.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="0" selection-start="85" selection-end="85" vertical-scroll-proportion="-3.75" vertical-offset="0" max-vertical-offset="495">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MongoDriver.php" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Storage/Driver/MongoDriver.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="37" column="0" selection-start="795" selection-end="795" vertical-scroll-proportion="0.33246073" vertical-offset="353" max-vertical-offset="975">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Manager.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Metadata/Manager.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="88" column="0" selection-start="2953" selection-end="2953" vertical-scroll-proportion="-5.125" vertical-offset="1197" max-vertical-offset="2970">
-              <folding>
-                <element signature="e#34#79#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Entity.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Metadata/Entity.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="15" column="36" selection-start="269" selection-end="285" vertical-scroll-proportion="-9.375" vertical-offset="0" max-vertical-offset="2085">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="Node.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Storage/Graph/Node.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="478" column="8" selection-start="18432" selection-end="18432" vertical-scroll-proportion="-157.5" vertical-offset="3270" max-vertical-offset="7170">
+            <state line="382" column="114" selection-start="13724" selection-end="13724" vertical-scroll-proportion="-3.54" vertical-offset="5433" max-vertical-offset="7635">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Graph.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Storage/Graph/Graph.php">
+      <file leaf-file-name="graph.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/dev/graph.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="85" column="0" selection-start="2509" selection-end="2509" vertical-scroll-proportion="-2.625" vertical-offset="1077" max-vertical-offset="2670">
-              <folding />
+            <state line="83" column="40" selection-start="2956" selection-end="2992" vertical-scroll-proportion="-16.25" vertical-offset="855" max-vertical-offset="1950">
+              <folding>
+                <element signature="e#7#1120#0" expanded="true" />
+                <element signature="e#1122#1167#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="PredicateParser.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Fetch/PredicateParser.php">
+      <file leaf-file-name="Report.php" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Controller/Report.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="36" column="0" selection-start="813" selection-end="813" vertical-scroll-proportion="-2.625" vertical-offset="402" max-vertical-offset="3735">
+            <state line="78" column="0" selection-start="3024" selection-end="3024" vertical-scroll-proportion="0.8286802" vertical-offset="322" max-vertical-offset="1275">
               <folding />
             </state>
           </provider>
@@ -154,14 +93,19 @@
         <option value="$PROJECT_DIR$/dev/extras.js" />
         <option value="$PROJECT_DIR$/Fetch/FilterTokenizer.php" />
         <option value="$PROJECT_DIR$/Fetch/PredicateParser.php" />
-        <option value="$PROJECT_DIR$/Storage/Graph/Node.php" />
         <option value="$PROJECT_DIR$/Metadata/Manager.php" />
-        <option value="$PROJECT_DIR$/dev/graph.php" />
         <option value="$PROJECT_DIR$/Fetch/Request.php" />
         <option value="$PROJECT_DIR$/Storage/Driver/Mongo.php" />
-        <option value="$PROJECT_DIR$/Storage/Driver/DriverInterface.php" />
+        <option value="$PROJECT_DIR$/Storage/Graph/ResultProjectionProcessor.php" />
         <option value="$PROJECT_DIR$/Storage/Manager.php" />
+        <option value="$PROJECT_DIR$/Storage/Driver/DriverInterface.php" />
         <option value="$PROJECT_DIR$/Storage/Driver/MongoDriver.php" />
+        <option value="$PROJECT_DIR$/Storage/Cursor/BatchCursor.php" />
+        <option value="$PROJECT_DIR$/Storage/Graph/Graph.php" />
+        <option value="$PROJECT_DIR$/Storage/Graph/Node.php" />
+        <option value="$PROJECT_DIR$/dev/graph.php" />
+        <option value="$PROJECT_DIR$/dev/verify_ap.js" />
+        <option value="$PROJECT_DIR$/Controller/Report.php" />
       </list>
     </option>
   </component>
@@ -263,6 +207,24 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="Graph" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="reporting_prototype" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="reporting_prototype" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Storage" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="Driver" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -322,6 +284,24 @@
               <option name="myItemId" value="reporting_prototype" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dev" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="reporting_prototype" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="reporting_prototype" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Controller" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
@@ -371,22 +351,22 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3270809" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.46424386" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.34466588" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32769045" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -430,12 +410,12 @@
           <option name="timeStamp" value="64" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Storage/Driver/MongoDriver.php</url>
-          <line>37</line>
-          <option name="timeStamp" value="70" />
+          <url>file://$PROJECT_DIR$/Storage/Graph/Node.php</url>
+          <line>324</line>
+          <option name="timeStamp" value="73" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="71" />
+      <option name="time" value="74" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -457,8 +437,8 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="10" column="137" selection-start="302" selection-end="436" vertical-scroll-proportion="0.0" vertical-offset="150" max-vertical-offset="1470">
           <folding>
-            <element signature="e#7#926#0" expanded="true" />
-            <element signature="e#928#973#0" expanded="true" />
+            <element signature="e#7#1120#0" expanded="true" />
+            <element signature="e#1122#1167#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -502,8 +482,8 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="8" column="3" selection-start="157" selection-end="295" vertical-scroll-proportion="0.0" vertical-offset="120" max-vertical-offset="1470">
           <folding>
-            <element signature="e#7#926#0" expanded="true" />
-            <element signature="e#928#973#0" expanded="true" />
+            <element signature="e#7#1120#0" expanded="true" />
+            <element signature="e#1122#1167#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -541,25 +521,6 @@
         <state line="37" column="0" selection-start="893" selection-end="893" vertical-scroll-proportion="0.0" vertical-offset="237" max-vertical-offset="4965" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dev/extras.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="37" column="0" selection-start="893" selection-end="893" vertical-scroll-proportion="0.38545454" vertical-offset="237" max-vertical-offset="4965" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Storage/Graph/ResultProjectionProcessor.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2670">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dev/run.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="525">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/dev/run.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="27" column="0" selection-start="887" selection-end="1176" vertical-scroll-proportion="0.0" vertical-offset="1072" max-vertical-offset="1860">
@@ -570,20 +531,6 @@
     <entry file="file://$PROJECT_DIR$/Fetch/FilterTokenizer.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="133" column="45" selection-start="2743" selection-end="2743" vertical-scroll-proportion="0.0" vertical-offset="1995" max-vertical-offset="3690">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Storage/Graph/Node.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="478" column="8" selection-start="18432" selection-end="18432" vertical-scroll-proportion="-157.5" vertical-offset="3270" max-vertical-offset="7170">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Storage/Cursor/MongoCursor.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="825">
           <folding />
         </state>
       </provider>
@@ -602,40 +549,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Storage/Graph/Graph.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="85" column="0" selection-start="2509" selection-end="2509" vertical-scroll-proportion="-2.625" vertical-offset="1077" max-vertical-offset="2670">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Storage/Cursor/CursorInterface.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="431" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="420">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dev/graph.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="76" column="0" selection-start="2585" selection-end="2585" vertical-scroll-proportion="-5.125" vertical-offset="1017" max-vertical-offset="1890">
-          <folding>
-            <element signature="e#7#926#0" expanded="true" />
-            <element signature="e#928#973#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Metadata/Entity.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="15" column="36" selection-start="269" selection-end="285" vertical-scroll-proportion="-9.375" vertical-offset="0" max-vertical-offset="2085">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Storage/Driver/DriverInterface.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="0" selection-start="85" selection-end="85" vertical-scroll-proportion="-3.75" vertical-offset="0" max-vertical-offset="495">
           <folding />
         </state>
       </provider>
@@ -649,23 +565,119 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Fetch/Request.php">
+    <entry file="file://$PROJECT_DIR$/Storage/Graph/ResultProjectionProcessor.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="0" selection-start="492" selection-end="492" vertical-scroll-proportion="-5.125" vertical-offset="192" max-vertical-offset="2790">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Storage/Manager.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="79" column="0" selection-start="2616" selection-end="2616" vertical-scroll-proportion="-28.041666" vertical-offset="437" max-vertical-offset="1215">
+        <state line="50" column="0" selection-start="2957" selection-end="2957" vertical-scroll-proportion="-9.875" vertical-offset="513" max-vertical-offset="2775">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Storage/Driver/MongoDriver.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="37" column="0" selection-start="795" selection-end="795" vertical-scroll-proportion="0.33246073" vertical-offset="353" max-vertical-offset="975">
+        <state line="64" column="92" selection-start="1898" selection-end="1898" vertical-scroll-proportion="-15.166667" vertical-offset="521" max-vertical-offset="1020">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Storage/Driver/DriverInterface.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="55" selection-start="377" selection-end="389" vertical-scroll-proportion="0.51102203" vertical-offset="0" max-vertical-offset="499">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Storage/Graph/ResultCollection.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="6045">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Storage/Cursor/CursorInterface.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="22" column="1" selection-start="431" selection-end="431" vertical-scroll-proportion="0.6321839" vertical-offset="0" max-vertical-offset="522">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Storage/Cursor/BatchCursor.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="48" column="40" selection-start="1073" selection-end="1073" vertical-scroll-proportion="0.4827586" vertical-offset="393" max-vertical-offset="915">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Fetch/Request.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="0" selection-start="492" selection-end="492" vertical-scroll-proportion="0.2416503" vertical-offset="192" max-vertical-offset="2790">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Storage/Manager.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="54" column="84" selection-start="1990" selection-end="1990" vertical-scroll-proportion="0.62835246" vertical-offset="407" max-vertical-offset="1215">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Storage/Graph/Graph.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="39" column="0" selection-start="960" selection-end="1003" vertical-scroll-proportion="-18.75" vertical-offset="0" max-vertical-offset="2700">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Storage/Graph/Node.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="382" column="114" selection-start="13724" selection-end="13724" vertical-scroll-proportion="-3.54" vertical-offset="5433" max-vertical-offset="7635">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dev/run.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="0" selection-start="0" selection-end="557" vertical-scroll-proportion="0.45454547" vertical-offset="0" max-vertical-offset="825">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Storage/Cursor/MongoCursor.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="825">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dev/extras.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="27" selection-start="364" selection-end="452" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4965">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dev/verify_ap.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="60" column="85" selection-start="1834" selection-end="1834" vertical-scroll-proportion="0.8545455" vertical-offset="195" max-vertical-offset="1020">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dev/graph.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="83" column="40" selection-start="2956" selection-end="2992" vertical-scroll-proportion="-16.25" vertical-offset="855" max-vertical-offset="1950">
+          <folding>
+            <element signature="e#7#1120#0" expanded="true" />
+            <element signature="e#1122#1167#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Controller/Report.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="78" column="0" selection-start="3024" selection-end="3024" vertical-scroll-proportion="0.8286802" vertical-offset="322" max-vertical-offset="1275">
           <folding />
         </state>
       </provider>

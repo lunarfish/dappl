@@ -53,11 +53,12 @@ class Report
 	 */
 	public function report($defaultResourceName)
 	{
-		// Setup the managers
-		$storageManager = new StorageManager(array());
+        // Setup the managers
+		$storageManager = new StorageManager(array('driver_params' => $this->connectionConfig));
 		$metadataManager = new MetadataManager(array(
 			'metadata_container_name' => 'mongo.metadata',
-			'metadata_default_resource_name' => 'Entities'
+			'metadata_default_resource_name' => 'Entities',
+            'container_names' => $this->defaultResourceList
 		), $storageManager);
 		$resultProcessor = new ResultProjectionProcessor();
 
@@ -72,7 +73,7 @@ class Report
 
 		// Build graph
 		$batchSize = 500;
-		$graph = new Graph($metadataManager, $storageManager, $resultProcessor, $batchSize);
+		$graph = new Graph($metadataManager, $storageManager, $resultProcessor, $batchSize, false);
 		$predicates = $graph->extractPredicates($scanner, $parser, $filter);
 		$rootNode = $graph->buildGraph($defaultResourceName, $predicates, $select);
 

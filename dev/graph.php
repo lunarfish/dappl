@@ -11,7 +11,10 @@
  *
  *
  * From live-app-crm /var/scripts/bin/reports/sql
- * php -f /var/www/crm/src/Dappl/src/Dappl/dev/graph.php People 10 "PersonCentreRoles/Centre/PartnerType eq 'Access Point'" PersonID,Email
+ * php -f /var/www/crm/src/Dappl/src/Dappl/dev/graph.php People 500 "PersonCentreRoles/Centre/PartnerType eq 'Access Point'" PersonID,Email
+ *
+ * php -f /var/www/crm/src/Dappl/src/Dappl/dev/graph.php People 10 "((PersonCentreRoles/Centre/PartnerType eq 'Access Point') and (PersonID gt 200)) and (PersonID lt 220)" PersonID,Email
+ *
  *
  *
  * above must satisfy this sql:
@@ -45,6 +48,7 @@ require_once __DIR__ . '/../../crm/vendor/autoload.php';
 // Profiling
 $startTime = microtime(true);
 $batchSize = 10000;
+$isDebugging = false;
 
 // Validate input
 if (isset($argc)) {
@@ -73,7 +77,7 @@ $environment = isset($_SERVER['TINDER_CORE_ENVIROMENT']) ? $_SERVER['TINDER_CORE
 $driverParams = \Symfony\Component\Yaml\Yaml::parse(__DIR__ . '/../../crm/boot/config/crm/datastore_' . $environment . '.yaml');
 
 // Setup the managers
-$storageManager = new StorageManager(array('debug' => true, 'driver_params' => $driverParams));
+$storageManager = new StorageManager(array('debug' => $isDebugging, 'driver_params' => $driverParams));
 $metadataManager = new MetadataManager(array(
 	'metadata_container_name' => 'mongo.metadata',
 	'metadata_default_resource_name' => 'Entities',
@@ -86,7 +90,7 @@ $scanner = new FilterTokenizer();
 $parser = new PredicateParser();
 
 // Build graph
-$graph = new Graph($metadataManager, $storageManager, $resultProcessor, $batchSize);
+$graph = new Graph($metadataManager, $storageManager, $resultProcessor, $batchSize, $isDebugging);
 $predicates = $graph->extractPredicates($scanner, $parser, $filter);
 $rootNode = $graph->buildGraph($entitySet, $predicates, $select);
 
@@ -99,7 +103,7 @@ $rootNode->prepare($input);
 do {
 	$result = $rootNode->fetch();
 	if (is_object($result)) {
-		echo 'We have a result set: ' . count($result) . PHP_EOL;
+		//echo 'We have a result set: ' . count($result) . PHP_EOL;
 		foreach($result as $row) {
 			echo json_encode($row) . PHP_EOL;
 		}

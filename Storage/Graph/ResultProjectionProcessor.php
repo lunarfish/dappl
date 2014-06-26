@@ -43,7 +43,14 @@ class ResultProjectionProcessor implements ResultProcessorInterface
 
 			// Last child first - merge matches in last child into result collection (3 way merge)
 			$childResultCollection = end($childResults);
-			$this->createNodeFetchResultCollectionMatchingChildResults($returnResultCollection, $nodeResultCollection, $childResultCollection);
+            if (is_object($childResultCollection)) {
+
+
+                // @todo: check this - if the last child result is true, it has more data to fetch. We cannot merge in with createNodeFetchResultCollectionMatchingChildResults
+                // skipping this function in those circumstances to see what happens......
+
+                $this->createNodeFetchResultCollectionMatchingChildResults($returnResultCollection, $nodeResultCollection, $childResultCollection);
+            }
 
 			// We only want to iterate this filtered return result set, but add to it as we go.
 			// To avoid breaking the iterator make a copy before we start.

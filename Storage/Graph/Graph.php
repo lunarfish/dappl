@@ -26,15 +26,17 @@ class Graph
 
     private $rootNode;
     private $nodeCache;
+    private $isDebugging;
 
 
-    public function __construct(MetadataManager $metadataManager, StorageManager $storageManager, ResultProcessorInterface $resultProcessor, $batchSize)
+    public function __construct(MetadataManager $metadataManager, StorageManager $storageManager, ResultProcessorInterface $resultProcessor, $batchSize, $isDebugging)
     {
         $this->metadataManager = $metadataManager;
         $this->storageManager = $storageManager;
         $this->resultProcessor = $resultProcessor;
         $this->batchSize = $batchSize;
         $this->nodeCache = array();
+        $this->isDebugging = $isDebugging;
     }
 
 
@@ -175,7 +177,7 @@ class Graph
             throw new \Exception(sprintf('Cannot create node at path: [%s] for resource: [%s] - already exists in cache', $nodePath, $defaultResourceName));
         }
         $request = new Request($defaultResourceName, $this->metadataManager->metadataForDefaultResourceName($defaultResourceName));
-        $node = new Node($this->metadataManager, $request, $this->storageManager, $this->batchSize, $this->resultProcessor);
+        $node = new Node($this->metadataManager, $request, $this->storageManager, $this->batchSize, $this->resultProcessor, $this->isDebugging);
         $this->nodeCache[$nodePath] = $node;
         return $node;
     }
