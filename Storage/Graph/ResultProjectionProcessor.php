@@ -79,6 +79,10 @@ class ResultProjectionProcessor implements ResultProcessorInterface
                 foreach($entity as $key => $value) {
                     if (!in_array($key , $fields)) {
                         unset($entity->$key);
+                    } else if (is_object($value) && get_class($value) == 'MongoDate') {
+                        $value = date(DATE_ISO8601, $value->sec);
+                        $value = substr($value, 0, -2) . ':' . substr($value, -2);
+                        $entity->$key = $value;
                     }
                 }
             }
